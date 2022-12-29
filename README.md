@@ -5,5 +5,32 @@ The goal of the project is to research the possibility of using a neural network
 
 ---
 
-Here are some images generated with the raytracer:
-![enter image description here](https://raw.githubusercontent.com/fqhd/Raytracer/master/images/Output.png)
+## Raytracer API
+Here is an example of code using the Raytracer: 
+```cpp
+int main() {
+	Raytracer raytracer(
+		800, 600, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f), 90.0f, 0.0f, 3.0f, 500
+	);
+
+	raytracer.World.AddSphere(glm::vec3(0.0f, 0.0f, -3.0f), 0.5, std::make_shared<Lambertian>(glm::vec3(0.0f, 0.0f, 1.0f)));
+	raytracer.World.AddSphere(glm::vec3(0.0f, -100.5f, -3.0f), 100.0, std::make_shared<Lambertian>(glm::vec3(0.0f, 1.0f, 0.0f)));
+
+	raytracer.Draw();
+	raytracer.Canvas.Save("Output.png");
+
+	return 0;
+}
+```
+Along with the image it generates:
+
+![enter image description here](https://raw.githubusercontent.com/fqhd/Raytracer/master/images/example.png)
+
+--- 
+
+## Example Images
+
+Here are some images generated using the raytracer:
+
+![enter image description here](https://raw.githubusercontent.com/fqhd/Raytracer/master/images/image1.png)
+
