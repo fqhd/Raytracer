@@ -7,7 +7,8 @@ Camera::Camera(
 	int width, int height, float fov, float aperture,
 	float focusDistance
 )
-	: m_Width(width), m_Height(height), Fov(fov), m_Ratio(width / (float)height), Direction(lookAt), FocusDistance(focusDistance), m_Aperture(aperture)
+	: m_Width(width), m_Height(height), Fov(fov), m_Ratio(width / (float)height),
+	Direction(lookAt), FocusDistance(focusDistance), m_Aperture(aperture), Position(lookFrom)
 {
 	Update();
 }
@@ -16,7 +17,7 @@ void Camera::Update()
 {
 	float theta = glm::radians(Fov);
 	float h = glm::tan(theta / 2.0f);
-	float viewportHeight = 2.0 * h;
+	float viewportHeight = 2.0f * h;
 	float viewportWidth = m_Ratio * viewportHeight;
 
 	m_W = glm::normalize(Position - Direction);

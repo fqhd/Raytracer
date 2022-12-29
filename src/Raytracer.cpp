@@ -1,4 +1,5 @@
 #include "Raytracer.h"
+#include <iostream>
 
 Raytracer::Raytracer(int width, int height, const glm::vec3& camPos, const glm::vec3& lookAt, float fov, float aperture, float focusDistance, int raysPerPixel)
 	: Camera(camPos, lookAt, width, height, fov, aperture, focusDistance), Canvas(width, height),
@@ -32,5 +33,6 @@ void Raytracer::Draw()
 
 			Canvas.SetPixel(x, y, p);
 		}
+		std::cout << "Progress: " << (y / (float)m_Height) * 100.0f << "%" << std::endl;
 	}
 }

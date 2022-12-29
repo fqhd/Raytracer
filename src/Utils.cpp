@@ -65,3 +65,7 @@ glm::vec3 randomInUnitSphere() {
     float z = r * cosPhi;
     return glm::vec3(x, y, z);
 }
+
+glm::vec3 randomColor() {
+    return glm::vec3(randomFloatU(), randomFloatU(), randomFloatU());
+}
