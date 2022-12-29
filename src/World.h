@@ -10,6 +10,7 @@ public:
 
 	glm::vec3 GetRayColor(const Ray& ray, int depth = 50) const;
 	void AddSphere(const glm::vec3& position, float radius, const std::shared_ptr<Material>& material);
+	void Clear();
 
 private:
 

@@ -44,3 +44,8 @@ bool World::HitWorld(const Ray& ray, HitRecord& record) const
 
 	return hitAnything;
 }
+
+void World::Clear()
+{
+	m_Objects.clear();
+}
