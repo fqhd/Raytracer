@@ -1,4 +1,5 @@
 #include "ComputeShader.h"
+#include <iostream>
 
 ComputeShader::ComputeShader(int width, int height)
 	: m_Width(width), m_Height(height)
@@ -219,7 +220,6 @@ void ComputeShader::CreateInstance() {
 
         bool foundLayer = false;
         for (VkLayerProperties& prop : layerProperties) {
-            std::cout << prop.layerName << std::endl;
             if (strcmp("VK_LAYER_NV_optimus", prop.layerName) == 0) {
                 foundLayer = true;
                 break;

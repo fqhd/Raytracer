@@ -35,7 +35,7 @@ void Raytracer::Draw()
 
 			Canvas.SetPixel(x, y, p);
 		}
-#ifdef _DEBUG
+#ifndef NDEBUG
 		std::cout << "Progress: " << (y / (float)m_Height) * 100.0f << "%" << std::endl;
 #endif
 	}
