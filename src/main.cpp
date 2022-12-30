@@ -57,6 +57,6 @@ void DrawRandomScenes() {
         }
 
 		raytracer.DrawGPU();
-		raytracer.Canvas.Save("Output.png");
+		raytracer.Canvas.Save("output.png");
 	}
 }

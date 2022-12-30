@@ -1,7 +1,6 @@
 #include <vulkan/vulkan.h>
 #include <vector>
 #include <string.h>
-#include <assert.h>
 #include <iostream>
 #include "Image.h"
 
@@ -20,7 +19,6 @@ const bool enableValidationLayers = true;
     if (res != VK_SUCCESS)																				\
     {																									\
         printf("Fatal : VkResult is %d in %s at line %d\n", res,  __FILE__, __LINE__); \
-        assert(res == VK_SUCCESS);																		\
     }																									\
 }
 
