@@ -1,64 +1,41 @@
 #include "ComputeShader.h"
 #include <iostream>
 
+
 ComputeShader::ComputeShader(int width, int height)
 	: m_Width(width), m_Height(height)
 {
-    bufferSize = sizeof(float) * 4 * m_Width * m_Height;
     CreateInstance();
     FindPhysicalDevice();
     CreateDevice();
-    CreateBuffer();
+    inputBuffer.Create(physicalDevice, device, sizeof(int) * 2);
+    outputBuffer.Create(physicalDevice, device, sizeof(float) * 4 * m_Width * m_Height);
     CreateDescriptorSetLayout();
     CreateDescriptorSet();
     CreateComputePipeline();
     CreateCommandBuffer();
 }
 
-uint32_t ComputeShader::FindMemoryType(uint32_t memoryTypeBits, VkMemoryPropertyFlags properties) {
-    VkPhysicalDeviceMemoryProperties memoryProperties;
-
-    vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memoryProperties);
-
-    for (uint32_t i = 0; i < memoryProperties.memoryTypeCount; ++i) {
-        if ((memoryTypeBits & (1 << i)) &&
-            ((memoryProperties.memoryTypes[i].propertyFlags & properties) == properties))
-            return i;
-    }
-    return -1;
-}
-
 void ComputeShader::CreateDescriptorSetLayout() {
-    VkDescriptorSetLayoutBinding descriptorSetLayoutBinding = {};
-    descriptorSetLayoutBinding.binding = 0;
-    descriptorSetLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-    descriptorSetLayoutBinding.descriptorCount = 1;
-    descriptorSetLayoutBinding.stageFlags = VK_SHADER_STAGE_COMPUTE_BIT;
+    std::vector<VkDescriptorSetLayoutBinding> bindings(2);
+    bindings[0] = {};
+    bindings[0].binding = 0;
+    bindings[0].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+    bindings[0].descriptorCount = 1;
+    bindings[0].stageFlags = VK_SHADER_STAGE_COMPUTE_BIT;
+
+    bindings[1] = {};
+    bindings[1].binding = 1;
+    bindings[1].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+    bindings[1].descriptorCount = 1;
+    bindings[1].stageFlags = VK_SHADER_STAGE_COMPUTE_BIT;
 
     VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo = {};
     descriptorSetLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-    descriptorSetLayoutCreateInfo.bindingCount = 1;
-    descriptorSetLayoutCreateInfo.pBindings = &descriptorSetLayoutBinding;
+    descriptorSetLayoutCreateInfo.bindingCount = bindings.size();
+    descriptorSetLayoutCreateInfo.pBindings = bindings.data();
 
     VK_CHECK_RESULT(vkCreateDescriptorSetLayout(device, &descriptorSetLayoutCreateInfo, NULL, &descriptorSetLayout));
-}
-
-void ComputeShader::CreateBuffer() {
-    VkBufferCreateInfo bufferCreateInfo = {};
-    bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-    bufferCreateInfo.size = bufferSize;
-    bufferCreateInfo.usage = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
-    bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-    VK_CHECK_RESULT(vkCreateBuffer(device, &bufferCreateInfo, NULL, &buffer));
-    VkMemoryRequirements memoryRequirements;
-    vkGetBufferMemoryRequirements(device, buffer, &memoryRequirements);
-    VkMemoryAllocateInfo allocateInfo = {};
-    allocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-    allocateInfo.allocationSize = memoryRequirements.size;
-    allocateInfo.memoryTypeIndex = FindMemoryType(
-        memoryRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_COHERENT_BIT | VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
-    VK_CHECK_RESULT(vkAllocateMemory(device, &allocateInfo, NULL, &bufferMemory)); // allocate memory on device.
-    VK_CHECK_RESULT(vkBindBufferMemory(device, buffer, bufferMemory, 0));
 }
 
 void ComputeShader::CreateCommandBuffer() {
@@ -193,20 +170,35 @@ void ComputeShader::CreateDescriptorSet() {
 
     VK_CHECK_RESULT(vkAllocateDescriptorSets(device, &descriptorSetAllocateInfo, &descriptorSet));
 
-    VkDescriptorBufferInfo descriptorBufferInfo = {};
-    descriptorBufferInfo.buffer = buffer;
-    descriptorBufferInfo.offset = 0;
-    descriptorBufferInfo.range = bufferSize;
+    std::vector<VkDescriptorBufferInfo> descriptorBufferInfos(2);
+    descriptorBufferInfos[0] = {};
+    descriptorBufferInfos[0].buffer = outputBuffer.Buffer;
+    descriptorBufferInfos[0].offset = 0;
+    descriptorBufferInfos[0].range = outputBuffer.Size;
 
-    VkWriteDescriptorSet writeDescriptorSet = {};
-    writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    writeDescriptorSet.dstSet = descriptorSet;
-    writeDescriptorSet.dstBinding = 0;
-    writeDescriptorSet.descriptorCount = 1;
-    writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-    writeDescriptorSet.pBufferInfo = &descriptorBufferInfo;
+    descriptorBufferInfos[1] = {};
+    descriptorBufferInfos[1].buffer = inputBuffer.Buffer;
+    descriptorBufferInfos[1].offset = 0;
+    descriptorBufferInfos[1].range = inputBuffer.Size;
 
-    vkUpdateDescriptorSets(device, 1, &writeDescriptorSet, 0, NULL);
+    std::vector<VkWriteDescriptorSet> writeDescriptorSets(2);
+    writeDescriptorSets[0] = {};
+    writeDescriptorSets[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    writeDescriptorSets[0].dstSet = descriptorSet;
+    writeDescriptorSets[0].dstBinding = 0;
+    writeDescriptorSets[0].descriptorCount = 1;
+    writeDescriptorSets[0].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+    writeDescriptorSets[0].pBufferInfo = &descriptorBufferInfos[0];
+
+    writeDescriptorSets[1] = {};
+    writeDescriptorSets[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    writeDescriptorSets[1].dstSet = descriptorSet;
+    writeDescriptorSets[1].dstBinding = 1;
+    writeDescriptorSets[1].descriptorCount = 1;
+    writeDescriptorSets[1].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+    writeDescriptorSets[1].pBufferInfo = &descriptorBufferInfos[1];
+
+    vkUpdateDescriptorSets(device, writeDescriptorSets.size(), writeDescriptorSets.data(), 0, NULL);
 }
 
 void ComputeShader::CreateInstance() {
@@ -299,28 +291,18 @@ uint32_t ComputeShader::GetComputeQueueFamilyIndex() {
 }
 
 void ComputeShader::Run(Image& image) {
+    inputBuffer.UploadData(commandPool, queue);
     VkSubmitInfo submitInfo = {};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
     submitInfo.commandBufferCount = 1;
     submitInfo.pCommandBuffers = &commandBuffer;
     vkQueueSubmit(queue, 1, &submitInfo, NULL);
-    vkDeviceWaitIdle(device);
-
-    void* mappedMemory = NULL;
-    vkMapMemory(device, bufferMemory, 0, bufferSize, 0, &mappedMemory);
-    float* pmappedMemory = (float*)mappedMemory;
-
-    unsigned char* dst = image.GetData();
-    for (int i = 0; i < image.GetWidth() * image.GetHeight() * 4; i++) {
-        dst[i] = (unsigned char)(pmappedMemory[i] * 255.0f);
-    }
-    
-    vkUnmapMemory(device, bufferMemory);
+    outputBuffer.ReadData(image, commandPool, queue);
 }
 
 ComputeShader::~ComputeShader() {
-    vkFreeMemory(device, bufferMemory, NULL);
-    vkDestroyBuffer(device, buffer, NULL);
+    outputBuffer.Destroy();
+    inputBuffer.Destroy();
     vkDestroyShaderModule(device, computeShaderModule, NULL);
     vkDestroyDescriptorPool(device, descriptorPool, NULL);
     vkDestroyDescriptorSetLayout(device, descriptorSetLayout, NULL);

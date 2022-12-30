@@ -3,6 +3,8 @@
 #include <string.h>
 #include <iostream>
 #include "Image.h"
+#include "OutputBuffer.h"
+#include "InputBuffer.h"
 
 const int WORKGROUP_SIZE = 32;
 
@@ -35,8 +37,6 @@ private:
     void FindPhysicalDevice();
     uint32_t GetComputeQueueFamilyIndex();
     void CreateDevice();
-    uint32_t FindMemoryType(uint32_t memoryTypeBits, VkMemoryPropertyFlags properties);
-    void CreateBuffer();
     void CreateDescriptorSetLayout();
     void CreateDescriptorSet();
     uint32_t* ReadFile(uint32_t& length, const char* filename);
@@ -57,10 +57,9 @@ private:
     VkDescriptorPool descriptorPool;
     VkDescriptorSet descriptorSet;
     VkDescriptorSetLayout descriptorSetLayout;
-    VkBuffer buffer;
-    VkDeviceMemory bufferMemory;
-    uint32_t bufferSize;
     VkQueue queue;
     uint32_t queueFamilyIndex;
+    OutputBuffer outputBuffer;
+    InputBuffer inputBuffer;
 
 };

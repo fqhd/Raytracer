@@ -15,7 +15,7 @@ int main() {
 
 void DrawRandomScenes() {
 	Raytracer raytracer(
-		100, 60, glm::vec3(13.0f, 2.0f, 3.0f), glm::vec3(0.0f, 0.0f, 0.0f), 20.0f, 0.1f, 10.0f, 4
+		800, 600, glm::vec3(13.0f, 2.0f, 3.0f), glm::vec3(0.0f, 0.0f, 0.0f), 20.0f, 0.1f, 10.0f, 4
 	);
 
 	int numScenes = 1;
@@ -56,7 +56,7 @@ void DrawRandomScenes() {
             }
         }
 
-		raytracer.Draw();
+		raytracer.DrawGPU();
 		raytracer.Canvas.Save("output.png");
 	}
 }
