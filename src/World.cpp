@@ -2,9 +2,9 @@
 #include "Utils.h"
 #include "Lambertian.h"
 
-void World::AddSphere(const glm::vec3& position, float radius, const std::shared_ptr<Material>& material)
+void World::Add(const std::shared_ptr<Hittable>& obj)
 {
-	m_Objects.push_back(std::make_unique<Sphere>(position, radius, material));
+	m_Objects.push_back(obj);
 }
 
 glm::vec3 World::GetRayColor(const Ray& ray, int depth) const

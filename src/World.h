@@ -9,14 +9,14 @@ class World {
 public:
 
 	glm::vec3 GetRayColor(const Ray& ray, int depth = 50) const;
-	void AddSphere(const glm::vec3& position, float radius, const std::shared_ptr<Material>& material);
+	void Add(const std::shared_ptr<Hittable>& obj);
 	void Clear();
 
 private:
 
 	bool HitWorld(const Ray& ray, HitRecord& record) const;
 
-	std::vector<std::unique_ptr<Sphere>> m_Objects;
+	std::vector<std::shared_ptr<Hittable>> m_Objects;
 
 };
 

@@ -15,7 +15,7 @@ int main() {
 
 void DrawRandomScenes() {
 	Raytracer raytracer(
-		40, 30, glm::vec3(13.0f, 2.0f, 3.0f), glm::vec3(0.0f, 0.0f, 0.0f), 20.0f, 0.1f, 10.0f, 1
+		100, 60, glm::vec3(13.0f, 2.0f, 3.0f), glm::vec3(0.0f, 0.0f, 0.0f), 20.0f, 0.1f, 10.0f, 4
 	);
 
 	int numScenes = 1;
@@ -23,7 +23,7 @@ void DrawRandomScenes() {
 		raytracer.World.Clear();
 
 		auto groundMaterial = std::make_shared<Lambertian>(glm::vec3(0.5f, 0.5f, 0.5f));
-		raytracer.World.AddSphere(glm::vec3(0.0f, -1000.0f, 0.0f), 1000.0, groundMaterial);
+		raytracer.World.Add(std::make_shared<Sphere>(glm::vec3(0.0f, -1000.0f, 0.0f), 1000.0f, groundMaterial));
 
         for (int a = -11; a < 11; a++) {
             for (int b = -11; b < 11; b++) {
@@ -37,7 +37,7 @@ void DrawRandomScenes() {
                         // diffuse
                         auto albedo = randomColor();;
                         sphere_material = std::make_shared<Lambertian>(albedo);
-                        raytracer.World.AddSphere(center, 0.2f, sphere_material);
+                        raytracer.World.Add(std::make_shared<Sphere>(center, 0.2f, sphere_material));
                     }
                     else if (choose_mat < 0.95) {
                         // metal
@@ -45,12 +45,12 @@ void DrawRandomScenes() {
                         auto albedo = glm::vec3(r + 0.5f);
                         auto fuzz = randomFloatU() * 0.5f;
                         sphere_material = std::make_shared<Metal>(albedo, fuzz);
-                        raytracer.World.AddSphere(center, 0.2f, sphere_material);
+                        raytracer.World.Add(std::make_shared<Sphere>(center, 0.2f, sphere_material));
                     }
                     else {
                         // glass
                         sphere_material = std::make_shared<Dielectric>(1.5f);
-                        raytracer.World.AddSphere(center, 0.2f, sphere_material);
+                        raytracer.World.Add(std::make_shared<Sphere>(center, 0.2f, sphere_material));
                     }
                 }
             }
