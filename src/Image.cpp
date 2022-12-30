@@ -5,8 +5,8 @@
 Image::Image(int width, int height)
 	: m_Width(width), m_Height(height)
 {
-	m_Data = new unsigned char[width * height * 3];
-	memset(m_Data, 0, width * height * 3);
+	m_Data = new unsigned char[width * height * 4];
+	memset(m_Data, 255, width * height * 4);
 	stbi_flip_vertically_on_write(1);
 }
 
@@ -15,7 +15,7 @@ Image::~Image()
 	delete[] m_Data;
 }
 
-const unsigned char* const Image::GetData() const
+unsigned char* Image::GetData() const
 {
 	return m_Data;
 }
@@ -28,7 +28,7 @@ Pixel Image::GetPixel(int x, int y) const
 		return Pixel();
 	}
 #endif
-	return Pixel(m_Data[y * 3 * m_Width + x * 3], m_Data[y * 3 * m_Width + x * 3 + 1], m_Data[y * 3 * m_Width + x * 3 + 2]);
+	return Pixel(m_Data[y * 4 * m_Width + x * 4], m_Data[y * 4 * m_Width + x * 4 + 1], m_Data[y * 4 * m_Width + x * 4 + 2]);
 }
 
 const int Image::GetWidth() const
@@ -49,12 +49,12 @@ void Image::SetPixel(int x, int y, const Pixel& p) const
 		return;
 	};
 #endif
-	m_Data[y * 3 * m_Width + x * 3] = p.R;
-	m_Data[y * 3 * m_Width + x * 3 + 1] = p.G;
-	m_Data[y * 3 * m_Width + x * 3 + 2] = p.B;
+	m_Data[y * 4 * m_Width + x * 4] = p.R;
+	m_Data[y * 4 * m_Width + x * 4 + 1] = p.G;
+	m_Data[y * 4 * m_Width + x * 4 + 2] = p.B;
 }
 
 void Image::Save(const std::string& fileName) const
 {
-	stbi_write_png(fileName.c_str(), m_Width, m_Height, 3, m_Data, sizeof(unsigned char) * m_Width * 3);
+	stbi_write_png(fileName.c_str(), m_Width, m_Height, 4, m_Data, sizeof(unsigned char) * m_Width * 4);
 }

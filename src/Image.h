@@ -16,7 +16,7 @@ public:
 
 	Image(int width, int height);
 	~Image();
-	const unsigned char* const GetData() const;
+	unsigned char* GetData() const;
 	Pixel GetPixel(int x, int y) const;
 	void SetPixel(int x, int y, const Pixel& p) const;
 	const int GetWidth() const;

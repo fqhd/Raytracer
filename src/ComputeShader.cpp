@@ -1,0 +1,332 @@
+#include "ComputeShader.h"
+
+ComputeShader::ComputeShader(int width, int height)
+	: m_Width(width), m_Height(height)
+{
+    bufferSize = sizeof(float) * 4 * m_Width * m_Height;
+    CreateInstance();
+    FindPhysicalDevice();
+    CreateDevice();
+    CreateBuffer();
+    CreateDescriptorSetLayout();
+    CreateDescriptorSet();
+    CreateComputePipeline();
+    CreateCommandBuffer();
+}
+
+uint32_t ComputeShader::FindMemoryType(uint32_t memoryTypeBits, VkMemoryPropertyFlags properties) {
+    VkPhysicalDeviceMemoryProperties memoryProperties;
+
+    vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memoryProperties);
+
+    for (uint32_t i = 0; i < memoryProperties.memoryTypeCount; ++i) {
+        if ((memoryTypeBits & (1 << i)) &&
+            ((memoryProperties.memoryTypes[i].propertyFlags & properties) == properties))
+            return i;
+    }
+    return -1;
+}
+
+void ComputeShader::CreateDescriptorSetLayout() {
+    VkDescriptorSetLayoutBinding descriptorSetLayoutBinding = {};
+    descriptorSetLayoutBinding.binding = 0;
+    descriptorSetLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+    descriptorSetLayoutBinding.descriptorCount = 1;
+    descriptorSetLayoutBinding.stageFlags = VK_SHADER_STAGE_COMPUTE_BIT;
+
+    VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo = {};
+    descriptorSetLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+    descriptorSetLayoutCreateInfo.bindingCount = 1;
+    descriptorSetLayoutCreateInfo.pBindings = &descriptorSetLayoutBinding;
+
+    VK_CHECK_RESULT(vkCreateDescriptorSetLayout(device, &descriptorSetLayoutCreateInfo, NULL, &descriptorSetLayout));
+}
+
+void ComputeShader::CreateBuffer() {
+    VkBufferCreateInfo bufferCreateInfo = {};
+    bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    bufferCreateInfo.size = bufferSize;
+    bufferCreateInfo.usage = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
+    bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    VK_CHECK_RESULT(vkCreateBuffer(device, &bufferCreateInfo, NULL, &buffer));
+    VkMemoryRequirements memoryRequirements;
+    vkGetBufferMemoryRequirements(device, buffer, &memoryRequirements);
+    VkMemoryAllocateInfo allocateInfo = {};
+    allocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+    allocateInfo.allocationSize = memoryRequirements.size;
+    allocateInfo.memoryTypeIndex = FindMemoryType(
+        memoryRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_COHERENT_BIT | VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+    VK_CHECK_RESULT(vkAllocateMemory(device, &allocateInfo, NULL, &bufferMemory)); // allocate memory on device.
+    VK_CHECK_RESULT(vkBindBufferMemory(device, buffer, bufferMemory, 0));
+}
+
+void ComputeShader::CreateCommandBuffer() {
+    VkCommandPoolCreateInfo commandPoolCreateInfo = {};
+    commandPoolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+    commandPoolCreateInfo.flags = 0;
+    commandPoolCreateInfo.queueFamilyIndex = queueFamilyIndex;
+    VK_CHECK_RESULT(vkCreateCommandPool(device, &commandPoolCreateInfo, NULL, &commandPool));
+
+    VkCommandBufferAllocateInfo commandBufferAllocateInfo = {};
+    commandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+    commandBufferAllocateInfo.commandPool = commandPool;
+    commandBufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+    commandBufferAllocateInfo.commandBufferCount = 1;
+    VK_CHECK_RESULT(vkAllocateCommandBuffers(device, &commandBufferAllocateInfo, &commandBuffer));
+
+    VkCommandBufferBeginInfo beginInfo = {};
+    beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT; // the buffer is only submitted and used once in this application.
+    VK_CHECK_RESULT(vkBeginCommandBuffer(commandBuffer, &beginInfo)); // start recording commands.
+
+    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, pipeline);
+    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, pipelineLayout, 0, 1, &descriptorSet, 0, NULL);
+
+    vkCmdDispatch(commandBuffer, (uint32_t)ceil(m_Width / float(WORKGROUP_SIZE)), (uint32_t)ceil(m_Height / float(WORKGROUP_SIZE)), 1);
+
+    VK_CHECK_RESULT(vkEndCommandBuffer(commandBuffer));
+}
+
+void ComputeShader::CreateDevice() {
+    VkDeviceQueueCreateInfo queueCreateInfo = {};
+    queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+    queueFamilyIndex = GetComputeQueueFamilyIndex();
+    queueCreateInfo.queueFamilyIndex = queueFamilyIndex;
+    queueCreateInfo.queueCount = 1;
+    float queuePriorities = 1.0;
+    queueCreateInfo.pQueuePriorities = &queuePriorities;
+
+    VkDeviceCreateInfo deviceCreateInfo = {};
+
+    VkPhysicalDeviceFeatures deviceFeatures = {};
+
+    deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+    deviceCreateInfo.enabledLayerCount = 0;
+    deviceCreateInfo.ppEnabledLayerNames = NULL;
+    deviceCreateInfo.pQueueCreateInfos = &queueCreateInfo;
+    deviceCreateInfo.queueCreateInfoCount = 1;
+    deviceCreateInfo.pEnabledFeatures = &deviceFeatures;
+
+    VK_CHECK_RESULT(vkCreateDevice(physicalDevice, &deviceCreateInfo, NULL, &device));
+
+    vkGetDeviceQueue(device, queueFamilyIndex, 0, &queue);
+}
+
+void ComputeShader::CreateComputePipeline() {
+    uint32_t filelength;
+    uint32_t* code = ReadFile(filelength, "shaders/comp.spv");
+    VkShaderModuleCreateInfo createInfo = {};
+    createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+    createInfo.pCode = code;
+    createInfo.codeSize = filelength;
+
+    VK_CHECK_RESULT(vkCreateShaderModule(device, &createInfo, NULL, &computeShaderModule));
+    delete[] code;
+
+    VkPipelineShaderStageCreateInfo shaderStageCreateInfo = {};
+    shaderStageCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+    shaderStageCreateInfo.stage = VK_SHADER_STAGE_COMPUTE_BIT;
+    shaderStageCreateInfo.module = computeShaderModule;
+    shaderStageCreateInfo.pName = "main";
+
+    VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo = {};
+    pipelineLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+    pipelineLayoutCreateInfo.setLayoutCount = 1;
+    pipelineLayoutCreateInfo.pSetLayouts = &descriptorSetLayout;
+    VK_CHECK_RESULT(vkCreatePipelineLayout(device, &pipelineLayoutCreateInfo, NULL, &pipelineLayout));
+
+    VkComputePipelineCreateInfo pipelineCreateInfo = {};
+    pipelineCreateInfo.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
+    pipelineCreateInfo.stage = shaderStageCreateInfo;
+    pipelineCreateInfo.layout = pipelineLayout;
+
+    VK_CHECK_RESULT(vkCreateComputePipelines(
+        device, VK_NULL_HANDLE,
+        1, &pipelineCreateInfo,
+        NULL, &pipeline));
+}
+
+uint32_t* ComputeShader::ReadFile(uint32_t& length, const char* filename) {
+    FILE* fp = fopen(filename, "rb");
+    if (fp == NULL) {
+        printf("Could not find or open file: %s\n", filename);
+        return nullptr;
+    }
+
+    fseek(fp, 0, SEEK_END);
+    long filesize = ftell(fp);
+    fseek(fp, 0, SEEK_SET);
+
+    long filesizepadded = long(ceil(filesize / 4.0)) * 4;
+
+    char* str = new char[filesizepadded];
+    fread(str, filesize, sizeof(char), fp);
+    fclose(fp);
+
+    for (int i = filesize; i < filesizepadded; i++) {
+        str[i] = 0;
+    }
+
+    length = filesizepadded;
+    return (uint32_t*)str;
+}
+
+void ComputeShader::CreateDescriptorSet() {
+    VkDescriptorPoolSize descriptorPoolSize = {};
+    descriptorPoolSize.type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+    descriptorPoolSize.descriptorCount = 1;
+
+    VkDescriptorPoolCreateInfo descriptorPoolCreateInfo = {};
+    descriptorPoolCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+    descriptorPoolCreateInfo.maxSets = 1;
+    descriptorPoolCreateInfo.poolSizeCount = 1;
+    descriptorPoolCreateInfo.pPoolSizes = &descriptorPoolSize;
+
+    VK_CHECK_RESULT(vkCreateDescriptorPool(device, &descriptorPoolCreateInfo, NULL, &descriptorPool));
+
+    VkDescriptorSetAllocateInfo descriptorSetAllocateInfo = {};
+    descriptorSetAllocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+    descriptorSetAllocateInfo.descriptorPool = descriptorPool;
+    descriptorSetAllocateInfo.descriptorSetCount = 1;
+    descriptorSetAllocateInfo.pSetLayouts = &descriptorSetLayout;
+
+    VK_CHECK_RESULT(vkAllocateDescriptorSets(device, &descriptorSetAllocateInfo, &descriptorSet));
+
+    VkDescriptorBufferInfo descriptorBufferInfo = {};
+    descriptorBufferInfo.buffer = buffer;
+    descriptorBufferInfo.offset = 0;
+    descriptorBufferInfo.range = bufferSize;
+
+    VkWriteDescriptorSet writeDescriptorSet = {};
+    writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    writeDescriptorSet.dstSet = descriptorSet;
+    writeDescriptorSet.dstBinding = 0;
+    writeDescriptorSet.descriptorCount = 1;
+    writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+    writeDescriptorSet.pBufferInfo = &descriptorBufferInfo;
+
+    vkUpdateDescriptorSets(device, 1, &writeDescriptorSet, 0, NULL);
+}
+
+void ComputeShader::CreateInstance() {
+    std::vector<const char*> enabledLayers;
+
+    if (enableValidationLayers) {
+        uint32_t layerCount;
+        vkEnumerateInstanceLayerProperties(&layerCount, NULL);
+        std::vector<VkLayerProperties> layerProperties(layerCount);
+        vkEnumerateInstanceLayerProperties(&layerCount, layerProperties.data());
+
+        bool foundLayer = false;
+        for (VkLayerProperties& prop : layerProperties) {
+            std::cout << prop.layerName << std::endl;
+            if (strcmp("VK_LAYER_NV_optimus", prop.layerName) == 0) {
+                foundLayer = true;
+                break;
+            }
+        }
+
+        if (!foundLayer) {
+            std::cout << "Layer VK_LAYER_NV_optimus not supported" << std::endl;
+
+        }
+        enabledLayers.push_back("VK_LAYER_NV_optimus");
+    }
+
+    VkApplicationInfo applicationInfo = {};
+    applicationInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+    applicationInfo.pApplicationName = "Hello world app";
+    applicationInfo.applicationVersion = 0;
+    applicationInfo.pEngineName = "awesomeengine";
+    applicationInfo.engineVersion = 0;
+    applicationInfo.apiVersion = VK_API_VERSION_1_0;;
+
+    VkInstanceCreateInfo createInfo = {};
+    createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+    createInfo.flags = 0;
+    createInfo.pApplicationInfo = &applicationInfo;
+
+    createInfo.enabledLayerCount = (uint32_t)enabledLayers.size();
+    createInfo.ppEnabledLayerNames = enabledLayers.data();
+    createInfo.enabledExtensionCount = 0;
+    createInfo.ppEnabledExtensionNames = NULL;
+
+    VK_CHECK_RESULT(vkCreateInstance(
+        &createInfo,
+        NULL,
+        &instance));
+}
+
+void ComputeShader::FindPhysicalDevice() {
+    uint32_t deviceCount;
+    vkEnumeratePhysicalDevices(instance, &deviceCount, NULL);
+    if (deviceCount == 0) {
+        std::cout << "Could not find a device with vulkan support" << std::endl;
+    }
+
+    std::vector<VkPhysicalDevice> devices(deviceCount);
+    vkEnumeratePhysicalDevices(instance, &deviceCount, devices.data());
+    for (VkPhysicalDevice device : devices) {
+        if (true) {
+            physicalDevice = device;
+            break;
+        }
+    }
+}
+
+uint32_t ComputeShader::GetComputeQueueFamilyIndex() {
+    uint32_t queueFamilyCount;
+
+    vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyCount, NULL);
+
+    std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
+    vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyCount, queueFamilies.data());
+
+    uint32_t i = 0;
+    for (; i < queueFamilies.size(); ++i) {
+        VkQueueFamilyProperties props = queueFamilies[i];
+
+        if (props.queueCount > 0 && (props.queueFlags & VK_QUEUE_COMPUTE_BIT)) {
+            break;
+        }
+    }
+
+    if (i == queueFamilies.size()) {
+        std::cout << "Could not find a queue family that supports compute operations" << std::endl;
+    }
+
+    return i;
+}
+
+void ComputeShader::Run(Image& image) {
+    VkSubmitInfo submitInfo = {};
+    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    submitInfo.commandBufferCount = 1;
+    submitInfo.pCommandBuffers = &commandBuffer;
+    vkQueueSubmit(queue, 1, &submitInfo, NULL);
+    vkDeviceWaitIdle(device);
+
+    void* mappedMemory = NULL;
+    vkMapMemory(device, bufferMemory, 0, bufferSize, 0, &mappedMemory);
+    float* pmappedMemory = (float*)mappedMemory;
+
+    unsigned char* dst = image.GetData();
+    for (int i = 0; i < image.GetWidth() * image.GetHeight() * 4; i++) {
+        dst[i] = (unsigned char)(pmappedMemory[i] * 255.0f);
+    }
+    
+    vkUnmapMemory(device, bufferMemory);
+}
+
+ComputeShader::~ComputeShader() {
+    vkFreeMemory(device, bufferMemory, NULL);
+    vkDestroyBuffer(device, buffer, NULL);
+    vkDestroyShaderModule(device, computeShaderModule, NULL);
+    vkDestroyDescriptorPool(device, descriptorPool, NULL);
+    vkDestroyDescriptorSetLayout(device, descriptorSetLayout, NULL);
+    vkDestroyPipelineLayout(device, pipelineLayout, NULL);
+    vkDestroyPipeline(device, pipeline, NULL);
+    vkDestroyCommandPool(device, commandPool, NULL);
+    vkDestroyDevice(device, NULL);
+    vkDestroyInstance(instance, NULL);
+}
