@@ -2,7 +2,6 @@
 #include <iostream>
 #include "VulkanUtils.h"
 
-
 void OutputBuffer::Create(VkPhysicalDevice physicalDevice, VkDevice device, VkDeviceSize size)
 {
     Size = size;
@@ -17,11 +16,9 @@ void OutputBuffer::ReadData(Image& image, VkCommandPool pool, VkQueue queue)
     CopyBuffer(m_Device, pool, queue, Buffer, m_StagingBuffer, Size);
     void* mappedMemory = NULL;
     vkMapMemory(m_Device, m_StagingMemory, 0, Size, 0, &mappedMemory);
-    float* pmappedMemory = (float*)mappedMemory;
+    uint32_t* pmappedMemory = (uint32_t*)mappedMemory;
     unsigned char* dst = image.GetData();
-    for (int i = 0; i < image.GetWidth() * image.GetHeight() * 4; i++) {
-        dst[i] = (unsigned char)(pmappedMemory[i] * 255.0f);
-    }
+    memcpy(dst, pmappedMemory, image.GetWidth() * image.GetHeight() * 4);
     vkUnmapMemory(m_Device, m_StagingMemory);
 }
 

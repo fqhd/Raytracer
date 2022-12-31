@@ -3,7 +3,6 @@
 #include "Lambertian.h"
 #include "Utils.h"
 #include "Dielectric.h"
-#include "Benchmarker.h"
 
 void DrawRandomScenes();
 
@@ -57,9 +56,7 @@ void DrawRandomScenes() {
             }
         }
 
-        Benchmarker::Start("GPU Bench");
 		raytracer.DrawGPU();
-        Benchmarker::End("GPU Bench");
 		raytracer.Canvas.Save("output.png");
 	}
 }

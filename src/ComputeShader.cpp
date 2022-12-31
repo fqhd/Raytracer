@@ -1,5 +1,6 @@
 #include "ComputeShader.h"
 #include <iostream>
+#include "Benchmarker.h"
 
 
 ComputeShader::ComputeShader(int width, int height)
@@ -9,7 +10,7 @@ ComputeShader::ComputeShader(int width, int height)
     FindPhysicalDevice();
     CreateDevice();
     inputBuffer.Create(physicalDevice, device, sizeof(int) * 2);
-    outputBuffer.Create(physicalDevice, device, sizeof(float) * 4 * m_Width * m_Height);
+    outputBuffer.Create(physicalDevice, device, sizeof(int) * m_Width * m_Height);
     CreateDescriptorSetLayout();
     CreateDescriptorSet();
     CreateComputePipeline();
@@ -290,13 +291,22 @@ uint32_t ComputeShader::GetComputeQueueFamilyIndex() {
 }
 
 void ComputeShader::Run(Image& image) {
+    Benchmarker::Start("Data Upload");
     inputBuffer.UploadData(commandPool, queue);
+    Benchmarker::End("Data Upload");
+
+    Benchmarker::Start("Compute");
     VkSubmitInfo submitInfo = {};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
     submitInfo.commandBufferCount = 1;
     submitInfo.pCommandBuffers = &commandBuffer;
     vkQueueSubmit(queue, 1, &submitInfo, NULL);
+    vkQueueWaitIdle(queue);
+    Benchmarker::End("Compute");
+
+    Benchmarker::Start("Read");
     outputBuffer.ReadData(image, commandPool, queue);
+    Benchmarker::End("Read");
 }
 
 ComputeShader::~ComputeShader() {

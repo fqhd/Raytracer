@@ -4,13 +4,9 @@
 #define WORKGROUP_SIZE 32
 layout (local_size_x = WORKGROUP_SIZE, local_size_y = WORKGROUP_SIZE, local_size_z = 1 ) in;
 
-struct Pixel{
-  vec4 value;
-};
-
 layout(std430, binding = 0) buffer outputBuffer
 {
-  Pixel imageData[];
+  uint imageData[];
 };
 
 layout(std430, binding = 1) buffer inputBuffer
@@ -37,7 +33,7 @@ void main() {
   float n = 0.0;
   vec2 c = vec2(-.445, 0.0) +  (uv - 0.5)*(2.0+ 1.7*0.2  ), 
   z = vec2(0.0);
-  const int M = 1000;
+  const int M = 1000000;
   for (int i = 0; i<M; i++)
   {
     z = vec2(z.x*z.x - z.y*z.y, 2.*z.x*z.y) + c;
@@ -55,5 +51,5 @@ void main() {
   vec3 color = vec3(d + e*cos( 6.28318*(f*t+g)));
           
   // store the rendered mandelbrot set into a storage buffer:
-  imageData[data[0] * gl_GlobalInvocationID.y + gl_GlobalInvocationID.x].value = vec4(color, 1.0);
+  imageData[data[0] * gl_GlobalInvocationID.y + gl_GlobalInvocationID.x] = packUnorm4x8(vec4(color, 1.0));
 }
