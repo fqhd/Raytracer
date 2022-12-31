@@ -3,7 +3,7 @@
 #include "Lambertian.h"
 #include "Utils.h"
 #include "Dielectric.h"
-#include "Timer.h"
+#include "Benchmarker.h"
 
 void DrawRandomScenes();
 
@@ -57,10 +57,9 @@ void DrawRandomScenes() {
             }
         }
 
-        Timer timer;
-        timer.Start();
+        Benchmarker::Start("GPU Bench");
 		raytracer.DrawGPU();
-        std::cout << "Time: " << timer.End() << std::endl;
+        Benchmarker::End("GPU Bench");
 		raytracer.Canvas.Save("output.png");
 	}
 }
