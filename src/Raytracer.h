@@ -3,6 +3,7 @@
 #include "Camera.h"
 #include "Image.h"
 #include "ComputeShader.h"
+#include "SceneData.h"
 
 class Raytracer {
 public:
@@ -13,13 +14,17 @@ public:
 
 	int m_Width = 0;
 	int m_Height = 0;
-	int m_PixelWidth = 0; 
+	int m_PixelWidth = 0;
 	Camera Camera;
 	World World;
 	Image Canvas;
 
 private:
+
+	void UpdateGPUData();
+
 	std::unique_ptr<ComputeShader> m_GPU;
+	std::unique_ptr<SceneData> m_GPUData;
 
 };
 

@@ -9,7 +9,7 @@ ComputeShader::ComputeShader(int width, int height)
     CreateInstance();
     FindPhysicalDevice();
     CreateDevice();
-    inputBuffer.Create(physicalDevice, device, sizeof(int) * 2);
+    inputBuffer.Create(physicalDevice, device, sizeof(SceneData));
     outputBuffer.Create(physicalDevice, device, sizeof(int) * m_Width * m_Height);
     CreateDescriptorSetLayout();
     CreateDescriptorSet();
@@ -290,9 +290,9 @@ uint32_t ComputeShader::GetComputeQueueFamilyIndex() {
     return i;
 }
 
-void ComputeShader::Run(Image& image) {
+void ComputeShader::Run(Image& image, const std::unique_ptr<SceneData>& data) {
     Benchmarker::Start("Data Upload");
-    inputBuffer.UploadData(commandPool, queue);
+    inputBuffer.UploadData(commandPool, queue, data);
     Benchmarker::End("Data Upload");
 
     Benchmarker::Start("Compute");

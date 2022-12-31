@@ -7,8 +7,8 @@ Camera::Camera(
 	int width, int height, float fov, float aperture,
 	float focusDistance
 )
-	: m_Width(width), m_Height(height), Fov(fov), m_Ratio(width / (float)height),
-	Direction(lookAt), FocusDistance(focusDistance), m_Aperture(aperture), Position(lookFrom)
+	: Width(width), Height(height), Fov(fov), Ratio(width / (float)height),
+	Direction(lookAt), FocusDistance(focusDistance), Aperture(aperture), Position(lookFrom)
 {
 	Update();
 }
@@ -18,29 +18,29 @@ void Camera::Update()
 	float theta = glm::radians(Fov);
 	float h = glm::tan(theta / 2.0f);
 	float viewportHeight = 2.0f * h;
-	float viewportWidth = m_Ratio * viewportHeight;
+	float viewportWidth = Ratio * viewportHeight;
 
-	m_W = glm::normalize(Position - Direction);
-	m_U = glm::normalize(glm::cross(glm::vec3(0.0f, 1.0f, 0.0f), m_W));
-	m_V = glm::cross(m_W, m_U);
+	W = glm::normalize(Position - Direction);
+	U = glm::normalize(glm::cross(glm::vec3(0.0f, 1.0f, 0.0f), W));
+	V = glm::cross(W, U);
 
 	Position = Position;
-	m_Horizontal = FocusDistance * viewportWidth * m_U;
-	m_Vertical = FocusDistance * viewportHeight * m_V;
-	m_LowerLeftCorner = Position - m_Horizontal / 2.0f - m_Vertical / 2.0f - FocusDistance * m_W;
+	Horizontal = FocusDistance * viewportWidth * U;
+	Vertical = FocusDistance * viewportHeight * V;
+	LowerLeftCorner = Position - Horizontal / 2.0f - Vertical / 2.0f - FocusDistance * W;
 
-	m_LensRadius = m_Aperture / 2.0f;
+	LensRadius = Aperture / 2.0f;
 }
 
 Ray Camera::GetScreenRay(float x, float y) const
 {
-	x /= (float)(m_Width - 1);
-	y /= (float)(m_Height - 1);
-	glm::vec3 rd = m_LensRadius * randomInUnitDisk();
-	glm::vec3 offset = m_U * rd.x + m_V * rd.y;
+	x /= (float)(Width - 1);
+	y /= (float)(Height - 1);
+	glm::vec3 rd = LensRadius * randomInUnitDisk();
+	glm::vec3 offset = U * rd.x + V * rd.y;
 
 	return Ray(
 		Position + offset,
-		m_LowerLeftCorner + x * m_Horizontal + y * m_Vertical - Position - offset
+		LowerLeftCorner + x * Horizontal + y * Vertical - Position - offset
 	);
 }

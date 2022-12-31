@@ -9,3 +9,4 @@ cl /EHsc /Od /DEBUG:FULL /Fe:out.exe src/*.cpp -IC:\VulkanSDK\Include /link C:\V
 
 del *.obj
 out.exe
+del out.exe

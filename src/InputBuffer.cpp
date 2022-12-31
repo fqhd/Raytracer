@@ -11,14 +11,12 @@ void InputBuffer::Create(VkPhysicalDevice physicalDevice, VkDevice device, VkDev
     CreateBuffer(physicalDevice, device, size, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, Buffer, Memory);
 }
 
-void InputBuffer::UploadData(VkCommandPool pool, VkQueue queue)
+void InputBuffer::UploadData(VkCommandPool pool, VkQueue queue, const std::unique_ptr<SceneData>& data)
 {
     vkDeviceWaitIdle(m_Device);
     void* mappedMemory = NULL;
     vkMapMemory(m_Device, m_StagingMemory, 0, Size, 0, &mappedMemory);
-    int* pmappedMemory = (int*)mappedMemory;
-    pmappedMemory[0] = 800;
-    pmappedMemory[1] = 600;
+    memcpy(mappedMemory, data.get(), sizeof(SceneData));
     vkUnmapMemory(m_Device, m_StagingMemory);
     CopyBuffer(m_Device, pool, queue, m_StagingBuffer, Buffer, Size);
 }

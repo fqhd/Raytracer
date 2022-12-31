@@ -3,10 +3,13 @@
 #include "Lambertian.h"
 #include "Utils.h"
 #include "Dielectric.h"
+#include "SceneData.h"
 
 void DrawRandomScenes();
 
 int main() {
+
+    std::cout << "SceneData Size: " << sizeof(SceneData) << std::endl;
 
 	DrawRandomScenes();
 
@@ -35,7 +38,7 @@ void DrawRandomScenes() {
 
                     if (choose_mat < 0.8) {
                         // diffuse
-                        auto albedo = randomColor();;
+                        auto albedo = randomColor();
                         sphere_material = std::make_shared<Lambertian>(albedo);
                         raytracer.World.Add(std::make_shared<Sphere>(center, 0.2f, sphere_material));
                     }

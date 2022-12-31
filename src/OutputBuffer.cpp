@@ -16,9 +16,8 @@ void OutputBuffer::ReadData(Image& image, VkCommandPool pool, VkQueue queue)
     CopyBuffer(m_Device, pool, queue, Buffer, m_StagingBuffer, Size);
     void* mappedMemory = NULL;
     vkMapMemory(m_Device, m_StagingMemory, 0, Size, 0, &mappedMemory);
-    uint32_t* pmappedMemory = (uint32_t*)mappedMemory;
     unsigned char* dst = image.GetData();
-    memcpy(dst, pmappedMemory, image.GetWidth() * image.GetHeight() * 4);
+    memcpy(dst, mappedMemory, image.GetWidth() * image.GetHeight() * 4);
     vkUnmapMemory(m_Device, m_StagingMemory);
 }
 

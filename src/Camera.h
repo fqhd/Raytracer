@@ -15,19 +15,20 @@ public:
 	glm::vec3 Direction;
 	float FocusDistance = 0.0f;
 	float Fov = 0.0f;
-	float m_Aperture = 0.0f;
+	float Aperture = 0.0f;
+
+	int Width = 0;
+	int Height = 0;
+	float Ratio = 0.0f;
+	float LensRadius = 0.0f;
+	glm::vec3 LowerLeftCorner;
+	glm::vec3 Horizontal;
+	glm::vec3 Vertical;
+	glm::vec3 U;
+	glm::vec3 V;
+	glm::vec3 W;
 
 private:
 
-	int m_Width = 0;
-	int m_Height = 0;
-	float m_Ratio = 0.0f;
-	float m_LensRadius = 0.0f;
-	glm::vec3 m_LowerLeftCorner;
-	glm::vec3 m_Horizontal;
-	glm::vec3 m_Vertical;
-	glm::vec3 m_U;
-	glm::vec3 m_V;
-	glm::vec3 m_W;
 };
 

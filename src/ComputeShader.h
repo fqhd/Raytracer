@@ -29,7 +29,7 @@ public:
     ComputeShader(int width, int height);
     ~ComputeShader();
 
-    void Run(Image& image);
+    void Run(Image& image, const std::unique_ptr<SceneData>& data);
     
 private:
 
