@@ -11,6 +11,47 @@ layout(std430, binding = 0) buffer outputBuffer
 	uint imageData[];
 };
 
+struct Ray {
+	vec3 origin;
+	vec3 direction;
+};
+
+struct Material {
+	float ir;
+	vec3 albedo;
+	float roughness;
+	int type;
+};
+
+struct HitRecord {
+	vec3 p;
+	vec3 normal;
+	float t;
+	bool frontFace;
+	Material material;
+};
+
+struct Sphere {
+	Material material;
+	vec3 center;
+	float radius;
+};
+
+struct Camera {
+	vec3 origin;
+	vec3 lowerLeftCorner;
+	vec3 horizontal;
+	vec3 vertical;
+	vec3 w;
+	vec3 u;
+	vec3 v;
+	float lensRadius;
+};
+
+struct HittableList {
+	Sphere spheres[5];
+};
+
 // Utilities
 /*
     static.frag
@@ -117,10 +158,6 @@ float reflectance(float cosine, float refIndex) {
 
 
 // Classes
-struct Ray {
-	vec3 origin;
-	vec3 direction;
-};
 
 Ray createRay(vec3 origin, vec3 direction){
 	Ray r;
@@ -133,31 +170,12 @@ vec3 at(Ray r, float t){
 	return r.origin + r.direction * t;
 }
 
-struct Material {
-	float ir;
-	vec3 albedo;
-	float roughness;
-	int type;
-};
-
-struct HitRecord {
-	vec3 p;
-	vec3 normal;
-	float t;
-	bool frontFace;
-	Material material;
-};
 
 void setFaceNormal(inout HitRecord record, Ray r, vec3 outwardNormal){
 	record.frontFace = dot(r.direction, outwardNormal) < 0.0;
 	record.normal = record.frontFace ? outwardNormal : -outwardNormal;
 }
 
-struct Sphere {
-	Material material;
-	vec3 center;
-	float radius;
-};
 
 bool hit(Sphere s, Ray r, float tmin, float tmax, inout HitRecord rec) {
 	vec3 oc = r.origin - s.center;
@@ -185,17 +203,6 @@ bool hit(Sphere s, Ray r, float tmin, float tmax, inout HitRecord rec) {
 
 	return true;
 }
-
-struct Camera {
-	vec3 origin;
-	vec3 lowerLeftCorner;
-	vec3 horizontal;
-	vec3 vertical;
-	vec3 w;
-	vec3 u;
-	vec3 v;
-	float lensRadius;
-};
 
 Camera createCamera(vec3 lookFrom, vec3 lookAt, float fov, float ratio, float aperture, float focusDistance){
 	Camera camera;
@@ -265,10 +272,6 @@ void scatter(HitRecord rec, inout vec3 throughput, inout Ray ray){
 Ray getNextRay(HitRecord record){
 	return createRay(record.p, randomInHemisphere(record.normal));
 }
-
-struct HittableList {
-	Sphere spheres[5];
-};
 
 void initHittableList(inout HittableList list){
 	Material ground;
