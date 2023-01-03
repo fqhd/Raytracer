@@ -4,7 +4,7 @@
 
 void World::Add(const std::shared_ptr<Hittable>& obj)
 {
-	m_Objects.push_back(obj);
+	Objects.push_back(obj);
 }
 
 glm::vec3 World::GetRayColor(const Ray& ray, int depth) const
@@ -34,7 +34,7 @@ bool World::HitWorld(const Ray& ray, HitRecord& record) const
 	float closestSoFar = 1000.0f;
 	bool hitAnything = false;
 
-	for (auto& obj : m_Objects) {
+	for (auto& obj : Objects) {
 		if (obj->Hit(ray, 0.001f, closestSoFar, temp)) {
 			hitAnything = true;
 			closestSoFar = temp.T;
@@ -47,5 +47,5 @@ bool World::HitWorld(const Ray& ray, HitRecord& record) const
 
 void World::Clear()
 {
-	m_Objects.clear();
+	Objects.clear();
 }

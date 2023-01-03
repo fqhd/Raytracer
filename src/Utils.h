@@ -10,4 +10,3 @@ glm::vec3 randomUnitVector();
 glm::vec3 randomInHemisphere(const glm::vec3& normal);
 glm::vec3 randomInUnitDisk();
 glm::vec3 randomColor();
-glm::vec4 toGLSLVec3(const glm::vec3& vec);

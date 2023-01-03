@@ -1,5 +1,8 @@
 #include "Raytracer.h"
 #include "Utils.h"
+#include "Lambertian.h"
+#include "Metal.h"
+#include "Dielectric.h"
 #include <iostream>
 #include <memory>
 
@@ -38,9 +41,6 @@ void Raytracer::Draw()
 
 			Canvas.SetPixel(x, y, p);
 		}
-#ifndef NDEBUG
-		std::cout << "Progress: " << (y / (float)m_Height) * 100.0f << "%" << std::endl;
-#endif
 	}
 }
 
@@ -53,19 +53,40 @@ void Raytracer::DrawGPU()
 
 void Raytracer::UpdateGPUData()
 {
+	int numSpheres = (int)glm::min((int)World.Objects.size(), MAX_SPHERES);
 	// General Information
 	m_GPUData.get()->width = m_Width;
 	m_GPUData.get()->height = m_Height;
 	m_GPUData.get()->samplesPerPixel = m_PixelWidth * m_PixelWidth;
+	m_GPUData.get()->numSpheres = numSpheres;
 
 	// Camera
-	m_GPUData.get()->camera.position = toGLSLVec3(Camera.Position);
-	m_GPUData.get()->camera.lowerLeftCorner = toGLSLVec3(Camera.LowerLeftCorner);
-	m_GPUData.get()->camera.horizontal = toGLSLVec3(Camera.Horizontal);
-	m_GPUData.get()->camera.vertical = toGLSLVec3(Camera.Vertical);
-	m_GPUData.get()->camera.w = toGLSLVec3(Camera.W);
-	m_GPUData.get()->camera.u = toGLSLVec3(Camera.U);
-	m_GPUData.get()->camera.v = toGLSLVec3(Camera.V);
+	m_GPUData.get()->camera.position = Camera.Position;
+	m_GPUData.get()->camera.lowerLeftCorner = Camera.LowerLeftCorner;
+	m_GPUData.get()->camera.horizontal = Camera.Horizontal;
+	m_GPUData.get()->camera.vertical = Camera.Vertical;
+	m_GPUData.get()->camera.w = Camera.W;
+	m_GPUData.get()->camera.u = Camera.U;
+	m_GPUData.get()->camera.v = Camera.V;
 	m_GPUData.get()->camera.lensRadius = Camera.LensRadius;
+
+	// Add Sphere Data
+	for(int i = 0; i < numSpheres; i++){
+		if(Sphere* s = dynamic_cast<Sphere*>(World.Objects[i].get())){
+			m_GPUData.get()->list.spheres[i].position = s->Position;
+			m_GPUData.get()->list.spheres[i].radius = s->Radius;
+			if(Lambertian* mat = dynamic_cast<Lambertian*>(s->material.get())){
+				m_GPUData.get()->list.spheres[i].material.albedo = mat->Color;
+				m_GPUData.get()->list.spheres[i].material.type = 0;
+			}else if(Metal* mat = dynamic_cast<Metal*>(s->material.get())){
+				m_GPUData.get()->list.spheres[i].material.albedo = mat->Color;
+				m_GPUData.get()->list.spheres[i].material.roughness = mat->Roughness;
+				m_GPUData.get()->list.spheres[i].material.type = 1;
+			}else if(Dielectric* mat = dynamic_cast<Dielectric*>(s->material.get())){
+				m_GPUData.get()->list.spheres[i].material.ir = mat->RefractionIndex;
+				m_GPUData.get()->list.spheres[i].material.type = 2;
+			}
+		}
+	}
 
 }

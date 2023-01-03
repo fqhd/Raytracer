@@ -8,12 +8,12 @@ static float reflectance(float cosTheta, float refractionIndex) {
 }
 
 Dielectric::Dielectric(float refractionIndex)
-	: m_RefractionIndex(refractionIndex) {}
+	: RefractionIndex(refractionIndex) {}
 
 const bool Dielectric::Scatter(const Ray& ray, const HitRecord& record, glm::vec3& attenuation, Ray& scattered) const
 {
     attenuation = glm::vec3(1.0f);
-    float refractionRatio = record.frontFace ? (1.0f / m_RefractionIndex) : m_RefractionIndex;
+    float refractionRatio = record.frontFace ? (1.0f / RefractionIndex) : RefractionIndex;
 
     glm::vec3 unitDir = glm::normalize(ray.Direction);
     float cosTheta = glm::min(glm::dot(-unitDir, record.Normal), 1.0f);

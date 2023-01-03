@@ -2,7 +2,7 @@
 #include "Utils.h"
 
 Lambertian::Lambertian(const glm::vec3& color)
-	: m_Color(color)
+	: Color(color)
 {}
 
 const bool Lambertian::Scatter(const Ray& ray, const HitRecord& record, glm::vec3& attenuation, Ray& scattered) const
@@ -12,6 +12,6 @@ const bool Lambertian::Scatter(const Ray& ray, const HitRecord& record, glm::vec
 		scatterDirection = record.Normal;
 	}
 	scattered = Ray(record.Point, scatterDirection);
-	attenuation = m_Color;
+	attenuation = Color;
 	return true;
 }

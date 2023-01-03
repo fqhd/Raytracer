@@ -10,14 +10,32 @@ layout(std430, binding = 0) buffer outputBuffer
 	uint imageData[];
 };
 
+struct Vector3 {
+	float x;
+	float y;
+	float z;
+};
+
+vec3 toVec3(Vector3 v){
+	return vec3(v.x, v.y, v.z);
+}
+
+Vector3 toVector(vec3 v){
+	Vector3 result;
+	result.x = v.x;
+	result.y = v.y;
+	result.z = v.z;
+	return result;
+}
+
 struct Ray {
 	vec3 origin;
 	vec3 direction;
 };
 
 struct Material {
+	Vector3 albedo;
 	float ir;
-	vec3 albedo;
 	float roughness;
 	int type;
 };
@@ -32,30 +50,32 @@ struct HitRecord {
 
 struct Sphere {
 	Material material;
-	vec3 center;
+	Vector3 center;
 	float radius;
 };
 
 struct Camera {
-	vec3 origin;
-	vec3 lowerLeftCorner;
-	vec3 horizontal;
-	vec3 vertical;
-	vec3 w;
-	vec3 u;
-	vec3 v;
+	Vector3 origin;
+	Vector3 lowerLeftCorner;
+	Vector3 horizontal;
+	Vector3 vertical;
+	Vector3 w;
+	Vector3 u;
+	Vector3 v;
 	float lensRadius;
 };
 
 struct HittableList {
-	Sphere spheres[5];
+	Sphere spheres[100];
 };
 
 struct SceneData {
 	int width;
 	int height;
 	int samplesPerPixel;
+	int numSpheres;
 	Camera camera;
+	HittableList list;
 };
 
 layout(std430, binding = 1) buffer inputBuffer
@@ -189,7 +209,7 @@ void setFaceNormal(inout HitRecord record, Ray r, vec3 outwardNormal){
 
 
 bool hit(Sphere s, Ray r, float tmin, float tmax, inout HitRecord rec) {
-	vec3 oc = r.origin - s.center;
+	vec3 oc = r.origin - toVec3(s.center);
 	float a = lengthSquared(r.direction);
 	float half_b = dot(oc, r.direction);
 	float c = lengthSquared(oc) - s.radius * s.radius;
@@ -208,39 +228,20 @@ bool hit(Sphere s, Ray r, float tmin, float tmax, inout HitRecord rec) {
 
 	rec.t = root;
 	rec.p = at(r, rec.t);
-	vec3 outwardNormal = (rec.p - s.center) / s.radius;
+	vec3 outwardNormal = (rec.p - toVec3(s.center)) / s.radius;
 	setFaceNormal(rec, r, outwardNormal);
 	rec.material = s.material;
 
 	return true;
 }
 
-Camera createCamera(vec3 lookFrom, vec3 lookAt, float fov, float ratio, float aperture, float focusDistance){
-	Camera camera;
-	float theta = radians(fov);
-	float h = tan(theta/2.0);
-	float viewportHeight = 2.0 * h;
-	float viewportWidth = ratio * viewportHeight;
-
-	camera.w = normalize(lookFrom - lookAt);
-	camera.u = normalize(cross(vec3(0.0, 1.0, 0.0), camera.w));
-	camera.v = cross(camera.w, camera.u);
-
-	camera.origin = lookFrom;
-	camera.horizontal = focusDistance * viewportWidth * camera.u;
-	camera.vertical = focusDistance * viewportHeight * camera.v;
-	camera.lowerLeftCorner = camera.origin - camera.horizontal/2 - camera.vertical/2 - focusDistance * camera.w;
-	camera.lensRadius = aperture / 2.0;
-	return camera;
-}
-
 Ray getRay(Camera camera, float x, float y){
 	vec3 rd = camera.lensRadius * randomInUnitDisk();
-	vec3 offset = camera.u * rd.x + camera.v * rd.y;
+	vec3 offset = toVec3(camera.u) * rd.x + toVec3(camera.v) * rd.y;
 
 	return createRay(
-		camera.origin + offset,
-		camera.lowerLeftCorner + x * camera.horizontal + y * camera.vertical - camera.origin - offset
+		toVec3(camera.origin) + offset,
+		toVec3(camera.lowerLeftCorner) + x * toVec3(camera.horizontal) + y * toVec3(camera.vertical) - toVec3(camera.origin) - offset
 	);
 }
 
@@ -253,11 +254,11 @@ void scatter(HitRecord rec, inout vec3 throughput, inout Ray ray){
 		}
 
 		ray = createRay(rec.p, scatterDirection);
-		throughput *= rec.material.albedo;
+		throughput *= toVec3(rec.material.albedo);
 	}else if(rec.material.type == 1){ // Metal
 		vec3 reflected = reflect(normalize(ray.direction), rec.normal);
 		ray = createRay(rec.p, reflected + rec.material.roughness * randomInUnitSphere());
-		throughput *= rec.material.albedo;
+		throughput *= toVec3(rec.material.albedo);
 	}else if(rec.material.type == 2){ // Dielectric
 		throughput *= vec3(1.0);
 		float refractionRatio = rec.frontFace ? (1.0/rec.material.ir) : rec.material.ir;
@@ -284,50 +285,11 @@ Ray getNextRay(HitRecord record){
 	return createRay(record.p, randomInHemisphere(record.normal));
 }
 
-void initHittableList(inout HittableList list){
-	Material ground;
-	ground.albedo = vec3(0.8, 0.8, 0.0);
-	ground.type = 0;
-
-	Material center;
-	center.type = 0;
-	center.albedo = vec3(0.1, 0.2, 0.5);
-
-	Material left;
-	left.type = 2;
-	left.ir = 1.5;
-
-	Material right;
-	right.albedo = vec3(0.8, 0.6, 0.2);
-	right.type = 1;
-	right.roughness = 0.0;
-
-	list.spheres[0].center = vec3(0.0, -100.5, -1.0);
-	list.spheres[0].radius = 100.0;
-	list.spheres[0].material = ground;
-
-	list.spheres[1].center = vec3(0.0, 0.0, -1.0);
-	list.spheres[1].radius = 0.5;
-	list.spheres[1].material = center;
-
-	list.spheres[2].center = vec3(-1.0, 0.0, -1.0);
-	list.spheres[2].radius = 0.5;
-	list.spheres[2].material = left;
-
-	list.spheres[3].center = vec3(1.0, 0.0, -1.0);
-	list.spheres[3].radius = 0.5;
-	list.spheres[3].material = right;
-
-	list.spheres[4].center = vec3(-1.0, 0.0, -1.0);
-	list.spheres[4].radius = -0.45;
-	list.spheres[4].material = left;
-}
-
 bool hitHittableList(HittableList list, Ray r, float tmin, float tmax, inout HitRecord rec){
 	HitRecord tempRec;
 	bool hitAnything = false;
 	float closestSoFar = tmax;
-	for(int i = 0; i < 5; i++){
+	for(int i = 0; i < 26; i++){
 		if (hit(list.spheres[i], r, tmin, closestSoFar, tempRec)){
 			hitAnything = true;
 			closestSoFar = tempRec.t;
@@ -364,8 +326,6 @@ void main() {
 	if(gl_GlobalInvocationID.x >= sceneData.width || gl_GlobalInvocationID.y >= sceneData.height)
 	return;
 
-	HittableList list;
-	initHittableList(list);
 	int depth = 10;
 
 	vec3 color = vec3(0.0);
@@ -375,12 +335,12 @@ void main() {
 			float x = (float(gl_GlobalInvocationID.x) + float(j) / pixelWidth) / float(sceneData.width - 1);
 			float y = (float(gl_GlobalInvocationID.y) + float(i) / pixelWidth) / float(sceneData.height - 1);
 			Ray r = getRay(sceneData.camera, x, y);
-			color += rayColor(r, list, depth);
+			color += rayColor(r, sceneData.list, depth);
 		}
 	}
 	
 	float scale = 1.0 / sceneData.samplesPerPixel;
 	color = sqrt(color * scale);
-
+	
 	writeColor(color);
 }

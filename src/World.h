@@ -12,11 +12,12 @@ public:
 	void Add(const std::shared_ptr<Hittable>& obj);
 	void Clear();
 
+	std::vector<std::shared_ptr<Hittable>> Objects;
+
 private:
 
 	bool HitWorld(const Ray& ray, HitRecord& record) const;
 
-	std::vector<std::shared_ptr<Hittable>> m_Objects;
 
 };
 
