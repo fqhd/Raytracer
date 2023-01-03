@@ -54,17 +54,4 @@ void Raytracer::UpdateGPUData()
 	m_GPUData.get()->width = m_Width;
 	m_GPUData.get()->height = m_Height;
 
-	// Update Camera
-	Camera.Update();
-	m_GPUData.get()->camData.position = Camera.Position;
-	m_GPUData.get()->camData.horizontal = Camera.Horizontal;
-	m_GPUData.get()->camData.vertical = Camera.Vertical;
-	m_GPUData.get()->camData.focusDistance = Camera.FocusDistance;
-	m_GPUData.get()->camData.lowerLeftColor = Camera.LowerLeftCorner;
-	m_GPUData.get()->camData.ratio = Camera.Ratio;
-
-	// Update Spheres TODO: Update with actual world.objects array
-	m_GPUData.get()->numSpheres = 1;
-	m_GPUData.get()->spheres[0].position = glm::vec3(0.0f, 0.0f, -3.0f);
-	m_GPUData.get()->spheres[0].radius = 0.5f;
 }

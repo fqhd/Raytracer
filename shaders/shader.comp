@@ -52,6 +52,16 @@ struct HittableList {
 	Sphere spheres[5];
 };
 
+struct SceneData {
+	int width;
+	int height;
+};
+
+layout(std430, binding = 1) buffer inputBuffer
+{
+	SceneData sceneData;
+};
+
 // Utilities
 /*
     static.frag
@@ -134,7 +144,7 @@ bool nearZero(vec3 v){
 }
 
 void writeColor(vec3 color){
-	imageData[800 * gl_GlobalInvocationID.y + gl_GlobalInvocationID.x] = packUnorm4x8(vec4(color, 1.0));
+	imageData[sceneData.width * gl_GlobalInvocationID.y + gl_GlobalInvocationID.x] = packUnorm4x8(vec4(color, 1.0));
 }
 
 float lengthSquared(vec3 v){
@@ -350,13 +360,13 @@ vec3 rayColor(Ray ray, HittableList list, int depth){
 }
 
 void main() {
-	if(gl_GlobalInvocationID.x >= 800 || gl_GlobalInvocationID.y >= 600)
+	if(gl_GlobalInvocationID.x >= sceneData.width || gl_GlobalInvocationID.y >= sceneData.height)
 	return;
 
 	vec3 lookFrom = vec3(3.0, 3.0, 2.0);
 	vec3 lookAt = vec3(0.0, 0.0, -1.0);
 
-	Camera camera = createCamera(lookFrom, lookAt, 30.0, 800.0 / 600.0, 2.0, length(lookFrom - lookAt));
+	Camera camera = createCamera(lookFrom, lookAt, 30.0, sceneData.width / float(sceneData.height), 2.0, length(lookFrom - lookAt));
 	HittableList list;
 	initHittableList(list);
 	int depth = 10;
@@ -365,8 +375,8 @@ void main() {
 	int pixelWidth = int(sqrt(SAMPLES_PER_PIXEL));
 	for(int i = 0; i < pixelWidth; i++){
 		for(int j = 0; j < pixelWidth; j++){
-			float x = (float(gl_GlobalInvocationID.x) + float(j) / pixelWidth) / float(800 - 1);
-			float y = (float(gl_GlobalInvocationID.y) + float(i) / pixelWidth) / float(600 - 1);
+			float x = (float(gl_GlobalInvocationID.x) + float(j) / pixelWidth) / float(sceneData.width - 1);
+			float y = (float(gl_GlobalInvocationID.y) + float(i) / pixelWidth) / float(sceneData.height - 1);
 			Ray r = getRay(camera, x, y);
 			color += rayColor(r, list, depth);
 		}

@@ -16,9 +16,6 @@ struct CameraData {
 };
 
 struct SceneData {
-	int numSpheres;
     int width;
     int height;
-	CameraData camData;
-	SphereData spheres[100];
 };
