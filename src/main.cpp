@@ -4,6 +4,7 @@
 #include "Utils.h"
 #include "Dielectric.h"
 #include "SceneData.h"
+#include "Benchmarker.h"
 
 void DrawRandomScenes();
 
@@ -59,7 +60,9 @@ void DrawRandomScenes() {
             }
         }
 
+		Benchmarker::Start("Draw");
 		raytracer.DrawGPU();
+		Benchmarker::End("Draw");
 		raytracer.Canvas.Save("output.png");
 	}
 }
