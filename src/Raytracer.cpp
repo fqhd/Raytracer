@@ -1,4 +1,5 @@
 #include "Raytracer.h"
+#include "Utils.h"
 #include <iostream>
 #include <memory>
 
@@ -45,14 +46,26 @@ void Raytracer::Draw()
 
 void Raytracer::DrawGPU()
 {
+	Camera.Update();
 	UpdateGPUData();
 	m_GPU->Run(Canvas, m_GPUData);
 }
 
 void Raytracer::UpdateGPUData()
 {
+	// General Information
 	m_GPUData.get()->width = m_Width;
 	m_GPUData.get()->height = m_Height;
-	m_GPUData.get()->samplesPerPixel = 64;
+	m_GPUData.get()->samplesPerPixel = m_PixelWidth * m_PixelWidth;
+
+	// Camera
+	m_GPUData.get()->camera.position = toGLSLVec3(Camera.Position);
+	m_GPUData.get()->camera.lowerLeftCorner = toGLSLVec3(Camera.LowerLeftCorner);
+	m_GPUData.get()->camera.horizontal = toGLSLVec3(Camera.Horizontal);
+	m_GPUData.get()->camera.vertical = toGLSLVec3(Camera.Vertical);
+	m_GPUData.get()->camera.w = toGLSLVec3(Camera.W);
+	m_GPUData.get()->camera.u = toGLSLVec3(Camera.U);
+	m_GPUData.get()->camera.v = toGLSLVec3(Camera.V);
+	m_GPUData.get()->camera.lensRadius = Camera.LensRadius;
 
 }

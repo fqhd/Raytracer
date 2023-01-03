@@ -69,3 +69,7 @@ glm::vec3 randomInUnitSphere() {
 glm::vec3 randomColor() {
     return glm::vec3(randomFloatU(), randomFloatU(), randomFloatU());
 }
+
+glm::vec4 toGLSLVec3(const glm::vec3& vec) {
+	return glm::vec4(1.0f, vec.b, vec.g, vec.r);
+}

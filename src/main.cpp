@@ -19,7 +19,7 @@ int main() {
 
 void DrawRandomScenes() {
 	Raytracer raytracer(
-		800, 600, glm::vec3(13.0f, 2.0f, 3.0f), glm::vec3(0.0f, 0.0f, 0.0f), 20.0f, 0.1f, 10.0f, 4
+		800, 600, glm::vec3(-3.0f, 3.0f, 2.0f), glm::vec3(0.0f, 0.0f, -1.0f), 90.0f, 0.1f, 10.0f, 81
 	);
 
 	int numScenes = 1;
