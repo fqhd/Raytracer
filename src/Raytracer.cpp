@@ -53,5 +53,6 @@ void Raytracer::UpdateGPUData()
 {
 	m_GPUData.get()->width = m_Width;
 	m_GPUData.get()->height = m_Height;
+	m_GPUData.get()->samplesPerPixel = 64;
 
 }

@@ -18,4 +18,5 @@ struct CameraData {
 struct SceneData {
     int width;
     int height;
+	int samplesPerPixel;
 };

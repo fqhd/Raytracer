@@ -3,7 +3,6 @@
 
 #define PI 3.14159265359
 #define WORKGROUP_SIZE 32
-#define SAMPLES_PER_PIXEL 64
 layout (local_size_x = WORKGROUP_SIZE, local_size_y = WORKGROUP_SIZE, local_size_z = 1 ) in;
 
 layout(std430, binding = 0) buffer outputBuffer
@@ -55,6 +54,7 @@ struct HittableList {
 struct SceneData {
 	int width;
 	int height;
+	int samplesPerPixel;
 };
 
 layout(std430, binding = 1) buffer inputBuffer
@@ -372,7 +372,7 @@ void main() {
 	int depth = 10;
 
 	vec3 color = vec3(0.0);
-	int pixelWidth = int(sqrt(SAMPLES_PER_PIXEL));
+	int pixelWidth = int(sqrt(sceneData.samplesPerPixel));
 	for(int i = 0; i < pixelWidth; i++){
 		for(int j = 0; j < pixelWidth; j++){
 			float x = (float(gl_GlobalInvocationID.x) + float(j) / pixelWidth) / float(sceneData.width - 1);
@@ -382,7 +382,7 @@ void main() {
 		}
 	}
 	
-	float scale = 1.0 / SAMPLES_PER_PIXEL;
+	float scale = 1.0 / sceneData.samplesPerPixel;
 	color = sqrt(color * scale);
 
 	writeColor(color);
