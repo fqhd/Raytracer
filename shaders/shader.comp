@@ -188,8 +188,6 @@ float reflectance(float cosine, float refIndex) {
 }
 
 
-// Classes
-
 Ray createRay(vec3 origin, vec3 direction){
 	Ray r;
 	r.origin = origin;
@@ -201,12 +199,10 @@ vec3 at(Ray r, float t){
 	return r.origin + r.direction * t;
 }
 
-
 void setFaceNormal(inout HitRecord record, Ray r, vec3 outwardNormal){
 	record.frontFace = dot(r.direction, outwardNormal) < 0.0;
 	record.normal = record.frontFace ? outwardNormal : -outwardNormal;
 }
-
 
 bool hit(Sphere s, Ray r, float tmin, float tmax, inout HitRecord rec) {
 	vec3 oc = r.origin - toVec3(s.center);
@@ -235,7 +231,7 @@ bool hit(Sphere s, Ray r, float tmin, float tmax, inout HitRecord rec) {
 	return true;
 }
 
-Ray getRay(Camera camera, float x, float y){
+Ray getRay(const Camera camera, float x, float y){
 	vec3 rd = camera.lensRadius * randomInUnitDisk();
 	vec3 offset = toVec3(camera.u) * rd.x + toVec3(camera.v) * rd.y;
 
@@ -245,7 +241,7 @@ Ray getRay(Camera camera, float x, float y){
 	);
 }
 
-void scatter(HitRecord rec, inout vec3 throughput, inout Ray ray){
+void scatter(const HitRecord rec, inout vec3 throughput, inout Ray ray){
 	if(rec.material.type == 0){ // Lambertian
 		vec3 scatterDirection = rec.normal + randomUnitVector();
 
