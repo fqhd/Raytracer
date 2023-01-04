@@ -53,7 +53,7 @@ void Raytracer::DrawGPU()
 
 void Raytracer::UpdateGPUData()
 {
-	int numSpheres = (int)glm::min((int)World.Objects.size(), MAX_SPHERES);
+	int numSpheres = (int)glm::min((int)World.m_Objects.size(), MAX_SPHERES);
 	// General Information
 	m_GPUData.get()->width = m_Width;
 	m_GPUData.get()->height = m_Height;
@@ -74,7 +74,7 @@ void Raytracer::UpdateGPUData()
 
 	// Add Sphere Data
 	for(int i = 0; i < numSpheres; i++){
-		if(Sphere* s = dynamic_cast<Sphere*>(World.Objects[i].get())){
+		if(Sphere* s = dynamic_cast<Sphere*>(World.m_Objects[i].get())){
 			m_GPUData.get()->list.spheres[i].position = s->Position;
 			m_GPUData.get()->list.spheres[i].radius = s->Radius;
 			m_GPUData.get()->list.spheres[i].visible = 1;

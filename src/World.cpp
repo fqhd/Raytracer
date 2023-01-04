@@ -5,10 +5,10 @@
 
 void World::Add(const std::shared_ptr<Hittable>& obj)
 {
-	if(Objects.size() > 20){
+	if(m_Objects.size() > 20){
 		std::cout << "Cannot add more objects" << std::endl;
 	}else{
-		Objects.push_back(obj);
+		m_Objects.push_back(obj);
 	}
 }
 
@@ -39,7 +39,7 @@ bool World::HitWorld(const Ray& ray, HitRecord& record) const
 	float closestSoFar = 1000.0f;
 	bool hitAnything = false;
 
-	for (auto& obj : Objects) {
+	for (auto& obj : m_Objects) {
 		if (obj->Hit(ray, 0.001f, closestSoFar, temp)) {
 			hitAnything = true;
 			closestSoFar = temp.T;
@@ -52,5 +52,5 @@ bool World::HitWorld(const Ray& ray, HitRecord& record) const
 
 void World::Clear()
 {
-	Objects.clear();
+	m_Objects.clear();
 }
