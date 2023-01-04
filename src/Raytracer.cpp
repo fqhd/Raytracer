@@ -58,9 +58,6 @@ void Raytracer::UpdateGPUData()
 	m_GPUData.get()->width = m_Width;
 	m_GPUData.get()->height = m_Height;
 	m_GPUData.get()->samplesPerPixel = m_PixelWidth * m_PixelWidth;
-	m_GPUData.get()->numSpheres = numSpheres;
-	std::cout << "World Num Objects: " << World.Objects.size() << std::endl;
-	std::cout << "Num Spheres: " << m_GPUData.get()->numSpheres << std::endl;
 
 	// Camera
 	m_GPUData.get()->camera.position = Camera.Position;
@@ -72,11 +69,16 @@ void Raytracer::UpdateGPUData()
 	m_GPUData.get()->camera.v = Camera.V;
 	m_GPUData.get()->camera.lensRadius = Camera.LensRadius;
 
+	for(int i = 0; i < MAX_SPHERES; i++){
+		m_GPUData.get()->list.spheres[i].visible = 0;
+	}
+
 	// Add Sphere Data
 	for(int i = 0; i < numSpheres; i++){
 		if(Sphere* s = dynamic_cast<Sphere*>(World.Objects[i].get())){
 			m_GPUData.get()->list.spheres[i].position = s->Position;
 			m_GPUData.get()->list.spheres[i].radius = s->Radius;
+			m_GPUData.get()->list.spheres[i].visible = 1;
 			if(Lambertian* mat = dynamic_cast<Lambertian*>(s->material.get())){
 				m_GPUData.get()->list.spheres[i].material.albedo = mat->Color;
 				m_GPUData.get()->list.spheres[i].material.type = 0;

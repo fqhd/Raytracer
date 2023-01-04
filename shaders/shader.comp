@@ -1,6 +1,7 @@
 #version 450
 #extension GL_ARB_separate_shader_objects : enable
 
+#define MAX_SPHERES 20
 #define PI 3.14159265359
 #define WORKGROUP_SIZE 32
 layout (local_size_x = WORKGROUP_SIZE, local_size_y = WORKGROUP_SIZE, local_size_z = 1 ) in;
@@ -52,6 +53,7 @@ struct Sphere {
 	Material material;
 	Vector3 center;
 	float radius;
+	int visible;
 };
 
 struct Camera {
@@ -66,14 +68,13 @@ struct Camera {
 };
 
 struct HittableList {
-	Sphere spheres[20];
+	Sphere spheres[MAX_SPHERES];
 };
 
 struct SceneData {
 	int width;
 	int height;
 	int samplesPerPixel;
-	int numSpheres;
 	Camera camera;
 	HittableList list;
 };
@@ -289,11 +290,13 @@ bool hitHittableList(HittableList list, Ray r, float tmin, float tmax, inout Hit
 	HitRecord tempRec;
 	bool hitAnything = false;
 	float closestSoFar = tmax;
-	for(int i = 0; i < sceneData.numSpheres; i++){
-		if (hit(list.spheres[i], r, tmin, closestSoFar, tempRec)){
-			hitAnything = true;
-			closestSoFar = tempRec.t;
-			rec = tempRec;
+	for(int i = 0; i < MAX_SPHERES; i++){
+		if(list.spheres[i].visible == 1){
+			if (hit(list.spheres[i], r, tmin, closestSoFar, tempRec)){
+				hitAnything = true;
+				closestSoFar = tempRec.t;
+				rec = tempRec;
+			}
 		}
 	}
 	return hitAnything;

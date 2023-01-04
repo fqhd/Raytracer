@@ -14,6 +14,7 @@ struct SphereData {
 	MaterialData material;
     glm::vec3 position;
     float radius;
+	int visible;
 };
 
 struct CameraData {
@@ -35,7 +36,6 @@ struct SceneData {
     int width;
     int height;
 	int samplesPerPixel;
-	int numSpheres;
 	CameraData camera;
 	HittableList list;
 };
