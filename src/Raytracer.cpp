@@ -6,14 +6,28 @@
 #include <iostream>
 #include <memory>
 
-Raytracer::Raytracer(int width, int height, const glm::vec3& camPos, const glm::vec3& lookAt, float fov, float aperture, float focusDistance)
+Raytracer::Raytracer(int width, int height, const glm::vec3& camPos, const glm::vec3& lookAt, float fov, float aperture, float focusDistance, Backend backend)
 	: Camera(camPos, lookAt, width, height, fov, aperture, focusDistance), Canvas(width, height),
-	m_Width(width), m_Height(height)
+	m_Width(width), m_Height(height), m_Backend(backend)
 {
 	m_PixelWidth = 2;
 	m_GPU = std::make_unique<ComputeShader>(m_Width, m_Height);
 	m_GPUData = std::make_unique<SceneData>();
-	
+}
+
+void Raytracer::Draw()
+{
+	switch(m_Backend){
+		case Backend::CPU:
+			DrawCPU();
+		break;
+		case Backend::Vulkan:
+			DrawVulkan();
+		break;
+		case Backend::OpenGL:
+			DrawOpenGL();
+		break;
+	}
 }
 
 void Raytracer::DrawCPU()
@@ -44,7 +58,12 @@ void Raytracer::DrawCPU()
 	}
 }
 
-void Raytracer::DrawGPU()
+void Raytracer::DrawOpenGL()
+{
+	
+}
+
+void Raytracer::DrawVulkan()
 {
 	Camera.Update();
 	UpdateGPUData();
