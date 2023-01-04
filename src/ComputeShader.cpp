@@ -85,6 +85,15 @@ void ComputeShader::CreateDevice() {
     deviceCreateInfo.queueCreateInfoCount = 1;
     deviceCreateInfo.pEnabledFeatures = &deviceFeatures;
 
+    std::vector<const char*> extensions;
+
+#ifdef __APPLE__
+    extensions.push_back("VK_KHR_portability_subset");
+#endif
+
+    deviceCreateInfo.ppEnabledExtensionNames = extensions.data();
+    deviceCreateInfo.enabledExtensionCount = extensions.size();
+
     VK_CHECK_RESULT(vkCreateDevice(physicalDevice, &deviceCreateInfo, NULL, &device));
 
     vkGetDeviceQueue(device, queueFamilyIndex, 0, &queue);
@@ -152,7 +161,7 @@ uint32_t* ComputeShader::ReadFile(uint32_t& length, const char* filename) {
 void ComputeShader::CreateDescriptorSet() {
     VkDescriptorPoolSize descriptorPoolSize = {};
     descriptorPoolSize.type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-    descriptorPoolSize.descriptorCount = 1;
+    descriptorPoolSize.descriptorCount = 2;
 
     VkDescriptorPoolCreateInfo descriptorPoolCreateInfo = {};
     descriptorPoolCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
@@ -202,21 +211,39 @@ void ComputeShader::CreateDescriptorSet() {
 }
 
 void ComputeShader::CreateInstance() {
+    std::vector<const char*> enabledLayers;
+
+#ifdef DEBUG
+    uint32_t layerCount;
+    vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
+
+    std::vector<VkLayerProperties> availableLayers(layerCount);
+    vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
+
+    for (const auto& layerProperties : availableLayers) {
+        if (strcmp("VK_LAYER_KHRONOS_validation", layerProperties.layerName) == 0) {
+            enabledLayers.push_back("VK_LAYER_KHRONOS_validation");
+            break;
+        }
+    }
+#endif
+
     VkApplicationInfo applicationInfo = {};
     applicationInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
     applicationInfo.pApplicationName = "Hello world app";
     applicationInfo.applicationVersion = 0;
     applicationInfo.pEngineName = "awesomeengine";
     applicationInfo.engineVersion = 0;
-    applicationInfo.apiVersion = VK_API_VERSION_1_0;;
+    applicationInfo.apiVersion = VK_API_VERSION_1_2;
 
     VkInstanceCreateInfo createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
     createInfo.flags = 0;
     createInfo.pApplicationInfo = &applicationInfo;
 
-    createInfo.enabledLayerCount = 0;
-    createInfo.ppEnabledLayerNames = nullptr;
+    createInfo.enabledLayerCount = enabledLayers.size();
+    createInfo.ppEnabledLayerNames = enabledLayers.data();
+
     createInfo.enabledExtensionCount = 0;
     createInfo.ppEnabledExtensionNames = NULL;
 

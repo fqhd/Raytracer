@@ -1,7 +1,6 @@
 #include "Camera.h"
 #include "Utils.h"
 
-
 Camera::Camera(
 	const glm::vec3& lookFrom, const glm::vec3& lookAt,
 	int width, int height, float fov, float aperture,
@@ -24,7 +23,6 @@ void Camera::Update()
 	U = glm::normalize(glm::cross(glm::vec3(0.0f, 1.0f, 0.0f), W));
 	V = glm::cross(W, U);
 
-	Position = Position;
 	Horizontal = FocusDistance * viewportWidth * U;
 	Vertical = FocusDistance * viewportHeight * V;
 	LowerLeftCorner = Position - Horizontal / 2.0f - Vertical / 2.0f - FocusDistance * W;
