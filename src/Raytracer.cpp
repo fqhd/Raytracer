@@ -59,6 +59,8 @@ void Raytracer::UpdateGPUData()
 	m_GPUData.get()->height = m_Height;
 	m_GPUData.get()->samplesPerPixel = m_PixelWidth * m_PixelWidth;
 	m_GPUData.get()->numSpheres = numSpheres;
+	std::cout << "World Num Objects: " << World.Objects.size() << std::endl;
+	std::cout << "Num Spheres: " << m_GPUData.get()->numSpheres << std::endl;
 
 	// Camera
 	m_GPUData.get()->camera.position = Camera.Position;
@@ -88,5 +90,4 @@ void Raytracer::UpdateGPUData()
 			}
 		}
 	}
-
 }

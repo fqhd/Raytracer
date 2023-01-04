@@ -66,7 +66,7 @@ struct Camera {
 };
 
 struct HittableList {
-	Sphere spheres[100];
+	Sphere spheres[20];
 };
 
 struct SceneData {
@@ -289,7 +289,7 @@ bool hitHittableList(HittableList list, Ray r, float tmin, float tmax, inout Hit
 	HitRecord tempRec;
 	bool hitAnything = false;
 	float closestSoFar = tmax;
-	for(int i = 0; i < 26; i++){
+	for(int i = 0; i < sceneData.numSpheres; i++){
 		if (hit(list.spheres[i], r, tmin, closestSoFar, tempRec)){
 			hitAnything = true;
 			closestSoFar = tempRec.t;

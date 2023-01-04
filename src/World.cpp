@@ -1,10 +1,15 @@
 #include "World.h"
 #include "Utils.h"
 #include "Lambertian.h"
+#include <iostream>
 
 void World::Add(const std::shared_ptr<Hittable>& obj)
 {
-	Objects.push_back(obj);
+	if(Objects.size() > 20){
+		std::cout << "Cannot add more objects" << std::endl;
+	}else{
+		Objects.push_back(obj);
+	}
 }
 
 glm::vec3 World::GetRayColor(const Ray& ray, int depth) const

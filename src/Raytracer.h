@@ -10,6 +10,10 @@ public:
 
 	Raytracer(int width, int height, const glm::vec3& camPos, const glm::vec3& lookAt, float fov, float aperture, float focusDistance, int raysPerPixel);
 	void Draw();
+
+	/*
+		This function is depricated. It causes bugs due to compute time timeout, and doesn't support more than a few hundred spheres.
+	*/
 	void DrawGPU();
 
 	int m_Width = 0;

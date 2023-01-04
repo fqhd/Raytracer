@@ -1,7 +1,7 @@
 #pragma once
 #include "glm/glm.hpp"
 
-#define MAX_SPHERES 100
+#define MAX_SPHERES 20
 
 struct MaterialData {
 	glm::vec3 albedo;

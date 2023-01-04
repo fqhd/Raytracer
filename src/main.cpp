@@ -19,7 +19,7 @@ int main() {
 
 void DrawRandomScenes() {
 	Raytracer raytracer(
-		800, 600, glm::vec3(3.0f, 3.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), 60.0f, 0.01f, 10.0f, 64
+		800, 600, glm::vec3(3.0f, 3.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), 60.0f, 0.01f, 10.0f, 4
 	);
 
 	int numScenes = 1;
@@ -29,8 +29,8 @@ void DrawRandomScenes() {
 		auto groundMaterial = std::make_shared<Lambertian>(glm::vec3(0.5f, 0.5f, 0.5f));
 		raytracer.World.Add(std::make_shared<Sphere>(glm::vec3(0.0f, -1000.0f, 0.0f), 1000.0f, groundMaterial));
 
-        for (int a = 0; a < 5; a++) {
-            for (int b = 0; b < 5; b++) {
+        for (int a = 0; a < 6; a++) {
+            for (int b = 0; b < 6; b++) {
                 auto choose_mat = randomFloatU();
                 glm::vec3 center(-3.0f + randomFloatU() * 6, 0.2, -3 + randomFloatU() * 6);
 
