@@ -202,29 +202,6 @@ void ComputeShader::CreateDescriptorSet() {
 }
 
 void ComputeShader::CreateInstance() {
-    std::vector<const char*> enabledLayers;
-
-    if (enableValidationLayers) {
-        uint32_t layerCount;
-        vkEnumerateInstanceLayerProperties(&layerCount, NULL);
-        std::vector<VkLayerProperties> layerProperties(layerCount);
-        vkEnumerateInstanceLayerProperties(&layerCount, layerProperties.data());
-
-        bool foundLayer = false;
-        for (VkLayerProperties& prop : layerProperties) {
-            if (strcmp("VK_LAYER_NV_optimus", prop.layerName) == 0) {
-                foundLayer = true;
-                break;
-            }
-        }
-
-        if (!foundLayer) {
-            std::cout << "Layer VK_LAYER_NV_optimus not supported" << std::endl;
-
-        }
-        enabledLayers.push_back("VK_LAYER_NV_optimus");
-    }
-
     VkApplicationInfo applicationInfo = {};
     applicationInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
     applicationInfo.pApplicationName = "Hello world app";
@@ -238,8 +215,8 @@ void ComputeShader::CreateInstance() {
     createInfo.flags = 0;
     createInfo.pApplicationInfo = &applicationInfo;
 
-    createInfo.enabledLayerCount = (uint32_t)enabledLayers.size();
-    createInfo.ppEnabledLayerNames = enabledLayers.data();
+    createInfo.enabledLayerCount = 0;
+    createInfo.ppEnabledLayerNames = nullptr;
     createInfo.enabledExtensionCount = 0;
     createInfo.ppEnabledExtensionNames = NULL;
 

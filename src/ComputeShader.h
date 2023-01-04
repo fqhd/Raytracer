@@ -8,12 +8,6 @@
 
 const int WORKGROUP_SIZE = 32;
 
-#ifdef NDEBUG
-const bool enableValidationLayers = false;
-#else
-const bool enableValidationLayers = true;
-#endif
-
 // Used for validating return values of Vulkan API calls.
 #define VK_CHECK_RESULT(f) 																				\
 {																										\
