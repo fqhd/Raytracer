@@ -10,14 +10,14 @@ Here is an example of code using the Raytracer:
 ```cpp
 int main() {
 	Raytracer raytracer(
-		800, 600, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f), 90.0f, 0.0f, 3.0f, 500
+		800, 600, glm::vec3(0.0f, 1.4f, 0.0f), glm::vec3(0.0f, 0.0f, -3.0f), 90.0f, 0.0f, 3.0f
 	);
 
-	raytracer.World.AddSphere(glm::vec3(0.0f, 0.0f, -3.0f), 0.5, std::make_shared<Lambertian>(glm::vec3(0.0f, 0.0f, 1.0f)));
-	raytracer.World.AddSphere(glm::vec3(0.0f, -100.5f, -3.0f), 100.0, std::make_shared<Lambertian>(glm::vec3(0.0f, 1.0f, 0.0f)));
+	raytracer.World.Add(std::make_shared<Sphere>(glm::vec3(0.0f, 0.0f, -3.0f), 0.5f, std::make_shared<Dielectric>(0.12f)));
+	raytracer.World.Add(std::make_shared<Sphere>(glm::vec3(0.0f, -100.5f, -3.0f), 100.0f, std::make_shared<Lambertian>(glm::vec3(0.5f, 0.5f, 0.5f))));
 
-	raytracer.Draw();
-	raytracer.Canvas.Save("Output.png");
+	raytracer.DrawGPU();
+	raytracer.Canvas.Save("output.png");
 
 	return 0;
 }
@@ -33,4 +33,6 @@ Along with the image it generates:
 Here are some images generated using the raytracer:
 
 ![enter image description here](https://raw.githubusercontent.com/fqhd/Raytracer/master/images/image1.png)
+![enter image description here](https://raw.githubusercontent.com/fqhd/Raytracer/master/images/image2.png)
+![enter image description here](https://raw.githubusercontent.com/fqhd/Raytracer/master/images/image3.png)
 
