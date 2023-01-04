@@ -8,7 +8,7 @@
 class Raytracer {
 public:
 
-	Raytracer(int width, int height, const glm::vec3& camPos, const glm::vec3& lookAt, float fov, float aperture, float focusDistance, int raysPerPixel);
+	Raytracer(int width, int height, const glm::vec3& camPos, const glm::vec3& lookAt, float fov, float aperture, float focusDistance);
 	void Draw();
 
 	/*

@@ -6,11 +6,11 @@
 #include <iostream>
 #include <memory>
 
-Raytracer::Raytracer(int width, int height, const glm::vec3& camPos, const glm::vec3& lookAt, float fov, float aperture, float focusDistance, int raysPerPixel)
+Raytracer::Raytracer(int width, int height, const glm::vec3& camPos, const glm::vec3& lookAt, float fov, float aperture, float focusDistance)
 	: Camera(camPos, lookAt, width, height, fov, aperture, focusDistance), Canvas(width, height),
 	m_Width(width), m_Height(height)
 {
-	m_PixelWidth = (int)sqrt(raysPerPixel);
+	m_PixelWidth = 2;
 	m_GPU = std::make_unique<ComputeShader>(m_Width, m_Height);
 	m_GPUData = std::make_unique<SceneData>();
 	
@@ -57,7 +57,6 @@ void Raytracer::UpdateGPUData()
 	// General Information
 	m_GPUData.get()->width = m_Width;
 	m_GPUData.get()->height = m_Height;
-	m_GPUData.get()->samplesPerPixel = m_PixelWidth * m_PixelWidth;
 
 	// Camera
 	m_GPUData.get()->camera.position = Camera.Position;

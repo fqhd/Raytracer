@@ -74,7 +74,6 @@ struct HittableList {
 struct SceneData {
 	int width;
 	int height;
-	int samplesPerPixel;
 	Camera camera;
 	HittableList list;
 };
@@ -332,7 +331,7 @@ void main() {
 	int depth = 10;
 
 	vec3 color = vec3(0.0);
-	int pixelWidth = int(sqrt(sceneData.samplesPerPixel));
+	const int pixelWidth = 2;
 	for(int i = 0; i < pixelWidth; i++){
 		for(int j = 0; j < pixelWidth; j++){
 			float x = (float(gl_GlobalInvocationID.x) + float(j) / pixelWidth) / float(sceneData.width - 1);
@@ -342,7 +341,7 @@ void main() {
 		}
 	}
 	
-	float scale = 1.0 / sceneData.samplesPerPixel;
+	float scale = 1.0 / (pixelWidth * pixelWidth);
 	color = sqrt(color * scale);
 	
 	writeColor(color);

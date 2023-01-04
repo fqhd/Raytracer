@@ -35,7 +35,6 @@ struct HittableList {
 struct SceneData {
     int width;
     int height;
-	int samplesPerPixel;
 	CameraData camera;
 	HittableList list;
 };
