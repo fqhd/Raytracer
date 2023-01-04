@@ -8,7 +8,7 @@
 class World {
 public:
 
-	glm::vec3 GetRayColor(const Ray& ray, int depth = 50) const;
+	glm::vec3 GetRayColor(const Ray& ray, int depth = 10) const;
 	void Add(const std::shared_ptr<Hittable>& obj);
 	void Clear();
 

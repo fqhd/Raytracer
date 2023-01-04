@@ -16,7 +16,7 @@ Raytracer::Raytracer(int width, int height, const glm::vec3& camPos, const glm::
 	
 }
 
-void Raytracer::Draw()
+void Raytracer::DrawCPU()
 {
 	Camera.Update();
 	for (int y = 0; y < m_Height; y++) {
