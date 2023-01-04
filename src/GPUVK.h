@@ -18,10 +18,10 @@ const int WORKGROUP_SIZE = 32;
     }																									\
 }
 
-class ComputeShader {
+class GPUVK {
 public:
-    ComputeShader(int width, int height);
-    ~ComputeShader();
+    GPUVK(int width, int height);
+    ~GPUVK();
 
     void Run(Image& image, const std::unique_ptr<SceneData>& data);
     

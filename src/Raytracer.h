@@ -2,7 +2,7 @@
 #include "World.h"
 #include "Camera.h"
 #include "Image.h"
-#include "ComputeShader.h"
+#include "GPUVK.h"
 #include "SceneData.h"
 
 enum class Backend {
@@ -29,7 +29,8 @@ private:
 
 	void UpdateGPUData();
 
-	std::unique_ptr<ComputeShader> m_GPU;
+
+	std::unique_ptr<GPUVK> m_GPUVK;
 	std::unique_ptr<SceneData> m_GPUData;
 	int m_Width = 0;
 	int m_Height = 0;

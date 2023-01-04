@@ -14,7 +14,9 @@ int main() {
 	raytracer.World.Add(std::make_shared<Sphere>(glm::vec3(0.0f, 0.0f, -3.0f), 0.5f, std::make_shared<Dielectric>(0.12f)));
 	raytracer.World.Add(std::make_shared<Sphere>(glm::vec3(0.0f, -100.5f, -3.0f), 100.0f, std::make_shared<Lambertian>(glm::vec3(0.5f, 0.5f, 0.5f))));
 
+	Benchmarker::Start("Draw");
 	raytracer.Draw();
+	Benchmarker::End("Draw");
 	raytracer.Canvas.Save("output.png");
 
 	return 0;

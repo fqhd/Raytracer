@@ -11,8 +11,13 @@ Raytracer::Raytracer(int width, int height, const glm::vec3& camPos, const glm::
 	m_Width(width), m_Height(height), m_Backend(backend)
 {
 	m_PixelWidth = 2;
-	m_GPU = std::make_unique<ComputeShader>(m_Width, m_Height);
-	m_GPUData = std::make_unique<SceneData>();
+	if(backend == Backend::Vulkan){
+		m_GPUData = std::make_unique<SceneData>();
+		m_GPUVK = std::make_unique<GPUVK>(m_Width, m_Height);
+	}else if(backend == Backend::OpenGL){
+		m_GPUData = std::make_unique<SceneData>();
+
+	}
 }
 
 void Raytracer::Draw()
@@ -60,14 +65,16 @@ void Raytracer::DrawCPU()
 
 void Raytracer::DrawOpenGL()
 {
-	
+	Camera.Update();
+	UpdateGPUData();
+
 }
 
 void Raytracer::DrawVulkan()
 {
 	Camera.Update();
 	UpdateGPUData();
-	m_GPU->Run(Canvas, m_GPUData);
+	m_GPUVK->Run(Canvas, m_GPUData);
 }
 
 void Raytracer::UpdateGPUData()

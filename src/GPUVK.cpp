@@ -1,7 +1,7 @@
-#include "ComputeShader.h"
+#include "GPUVK.h"
 #include <iostream>
 
-ComputeShader::ComputeShader(int width, int height)
+GPUVK::GPUVK(int width, int height)
 	: m_Width(width), m_Height(height)
 {
     CreateInstance();
@@ -15,7 +15,7 @@ ComputeShader::ComputeShader(int width, int height)
     CreateCommandBuffer();
 }
 
-void ComputeShader::CreateDescriptorSetLayout() {
+void GPUVK::CreateDescriptorSetLayout() {
     std::vector<VkDescriptorSetLayoutBinding> bindings(2);
     bindings[0] = {};
     bindings[0].binding = 0;
@@ -37,7 +37,7 @@ void ComputeShader::CreateDescriptorSetLayout() {
     VK_CHECK_RESULT(vkCreateDescriptorSetLayout(device, &descriptorSetLayoutCreateInfo, NULL, &descriptorSetLayout));
 }
 
-void ComputeShader::CreateCommandBuffer() {
+void GPUVK::CreateCommandBuffer() {
     VkCommandPoolCreateInfo commandPoolCreateInfo = {};
     commandPoolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
     commandPoolCreateInfo.flags = 0;
@@ -63,7 +63,7 @@ void ComputeShader::CreateCommandBuffer() {
     VK_CHECK_RESULT(vkEndCommandBuffer(commandBuffer));
 }
 
-void ComputeShader::CreateDevice() {
+void GPUVK::CreateDevice() {
     VkDeviceQueueCreateInfo queueCreateInfo = {};
     queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
     queueFamilyIndex = GetComputeQueueFamilyIndex();
@@ -97,7 +97,7 @@ void ComputeShader::CreateDevice() {
     vkGetDeviceQueue(device, queueFamilyIndex, 0, &queue);
 }
 
-void ComputeShader::CreateComputePipeline() {
+void GPUVK::CreateComputePipeline() {
     uint32_t filelength;
     uint32_t* code = ReadFile(filelength, "shaders/comp.spv");
     VkShaderModuleCreateInfo createInfo = {};
@@ -131,7 +131,7 @@ void ComputeShader::CreateComputePipeline() {
         NULL, &pipeline));
 }
 
-uint32_t* ComputeShader::ReadFile(uint32_t& length, const char* filename) {
+uint32_t* GPUVK::ReadFile(uint32_t& length, const char* filename) {
     FILE* fp = fopen(filename, "rb");
     if (fp == NULL) {
         printf("Could not find or open file: %s\n", filename);
@@ -156,7 +156,7 @@ uint32_t* ComputeShader::ReadFile(uint32_t& length, const char* filename) {
     return (uint32_t*)str;
 }
 
-void ComputeShader::CreateDescriptorSet() {
+void GPUVK::CreateDescriptorSet() {
     VkDescriptorPoolSize descriptorPoolSize = {};
     descriptorPoolSize.type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
     descriptorPoolSize.descriptorCount = 2;
@@ -208,7 +208,7 @@ void ComputeShader::CreateDescriptorSet() {
     vkUpdateDescriptorSets(device, writeDescriptorSets.size(), writeDescriptorSets.data(), 0, NULL);
 }
 
-void ComputeShader::CreateInstance() {
+void GPUVK::CreateInstance() {
     std::vector<const char*> enabledLayers;
 
 #ifdef DEBUG
@@ -251,7 +251,7 @@ void ComputeShader::CreateInstance() {
         &instance));
 }
 
-void ComputeShader::FindPhysicalDevice() {
+void GPUVK::FindPhysicalDevice() {
     uint32_t deviceCount;
     vkEnumeratePhysicalDevices(instance, &deviceCount, NULL);
     if (deviceCount == 0) {
@@ -268,7 +268,7 @@ void ComputeShader::FindPhysicalDevice() {
     }
 }
 
-uint32_t ComputeShader::GetComputeQueueFamilyIndex() {
+uint32_t GPUVK::GetComputeQueueFamilyIndex() {
     uint32_t queueFamilyCount;
 
     vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyCount, NULL);
@@ -292,7 +292,7 @@ uint32_t ComputeShader::GetComputeQueueFamilyIndex() {
     return i;
 }
 
-void ComputeShader::Run(Image& image, const std::unique_ptr<SceneData>& data) {
+void GPUVK::Run(Image& image, const std::unique_ptr<SceneData>& data) {
     inputBuffer.UploadData(commandPool, queue, data);
     VkSubmitInfo submitInfo = {};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -303,7 +303,7 @@ void ComputeShader::Run(Image& image, const std::unique_ptr<SceneData>& data) {
     outputBuffer.ReadData(image, commandPool, queue);
 }
 
-ComputeShader::~ComputeShader() {
+GPUVK::~GPUVK() {
     outputBuffer.Destroy();
     inputBuffer.Destroy();
     vkDestroyShaderModule(device, computeShaderModule, NULL);
