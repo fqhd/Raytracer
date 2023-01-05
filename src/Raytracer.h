@@ -3,6 +3,7 @@
 #include "Camera.h"
 #include "Image.h"
 #include "GPUVK.h"
+#include "GPUGL.h"
 #include "SceneData.h"
 
 enum class Backend {
@@ -30,6 +31,7 @@ private:
 	void UpdateGPUData();
 
 
+	std::unique_ptr<GPUGL> m_GPUGL;
 	std::unique_ptr<GPUVK> m_GPUVK;
 	std::unique_ptr<SceneData> m_GPUData;
 	int m_Width = 0;

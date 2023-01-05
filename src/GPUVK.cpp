@@ -31,7 +31,7 @@ void GPUVK::CreateDescriptorSetLayout() {
 
     VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo = {};
     descriptorSetLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-    descriptorSetLayoutCreateInfo.bindingCount = bindings.size();
+    descriptorSetLayoutCreateInfo.bindingCount = (uint32_t)bindings.size();
     descriptorSetLayoutCreateInfo.pBindings = bindings.data();
 
     VK_CHECK_RESULT(vkCreateDescriptorSetLayout(device, &descriptorSetLayoutCreateInfo, NULL, &descriptorSetLayout));
@@ -90,7 +90,7 @@ void GPUVK::CreateDevice() {
 #endif
 
     deviceCreateInfo.ppEnabledExtensionNames = extensions.data();
-    deviceCreateInfo.enabledExtensionCount = extensions.size();
+    deviceCreateInfo.enabledExtensionCount = (uint32_t)extensions.size();
 
     VK_CHECK_RESULT(vkCreateDevice(physicalDevice, &deviceCreateInfo, NULL, &device));
 
@@ -205,7 +205,7 @@ void GPUVK::CreateDescriptorSet() {
     writeDescriptorSets[1].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
     writeDescriptorSets[1].pBufferInfo = &descriptorBufferInfos[1];
 
-    vkUpdateDescriptorSets(device, writeDescriptorSets.size(), writeDescriptorSets.data(), 0, NULL);
+    vkUpdateDescriptorSets(device, (uint32_t)writeDescriptorSets.size(), writeDescriptorSets.data(), 0, NULL);
 }
 
 void GPUVK::CreateInstance() {
@@ -239,7 +239,7 @@ void GPUVK::CreateInstance() {
     createInfo.flags = 0;
     createInfo.pApplicationInfo = &applicationInfo;
 
-    createInfo.enabledLayerCount = enabledLayers.size();
+    createInfo.enabledLayerCount = (uint32_t)enabledLayers.size();
     createInfo.ppEnabledLayerNames = enabledLayers.data();
 
     createInfo.enabledExtensionCount = 0;
