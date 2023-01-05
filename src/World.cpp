@@ -3,15 +3,6 @@
 #include "Lambertian.h"
 #include <iostream>
 
-void World::Add(const std::shared_ptr<Hittable>& obj)
-{
-	if(m_Objects.size() > 20){
-		std::cout << "Cannot add more objects" << std::endl;
-	}else{
-		m_Objects.push_back(obj);
-	}
-}
-
 glm::vec3 World::GetRayColor(const Ray& ray, int depth) const
 {
 	if (depth <= 0) {
@@ -39,7 +30,7 @@ bool World::HitWorld(const Ray& ray, HitRecord& record) const
 	float closestSoFar = 1000.0f;
 	bool hitAnything = false;
 
-	for (auto& obj : m_Objects) {
+	for (auto& obj : Objects) {
 		if (obj->Hit(ray, 0.001f, closestSoFar, temp)) {
 			hitAnything = true;
 			closestSoFar = temp.T;
@@ -52,5 +43,5 @@ bool World::HitWorld(const Ray& ray, HitRecord& record) const
 
 void World::Clear()
 {
-	m_Objects.clear();
+	Objects.clear();
 }
