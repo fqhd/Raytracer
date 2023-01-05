@@ -10,7 +10,7 @@ Here is an example of code using the Raytracer:
 ```cpp
 int main() {
 	Raytracer raytracer(
-		800, 600, glm::vec3(0.0f, 1.4f, 0.0f), glm::vec3(0.0f, 0.0f, -3.0f), 90.0f, 0.0f, 3.0f
+		800, 600, glm::vec3(0.0f, 1.4f, 0.0f), glm::vec3(0.0f, 0.0f, -3.0f), 90.0f, 0.0f, 3.0f, Backend::Vulkan /*OpenGL and CPU are supported as well*/
 	);
 
 	raytracer.World.Add(std::make_shared<Sphere>(glm::vec3(0.0f, 0.0f, -3.0f), 0.5f, std::make_shared<Dielectric>(0.12f)));
