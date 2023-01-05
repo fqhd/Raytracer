@@ -17,6 +17,7 @@ public:
 
 private:
 
+	void UploadSceneData(const std::unique_ptr<SceneData>& data);
 	void CreateQuad();
 
 	GLFWwindow* m_Window = nullptr;

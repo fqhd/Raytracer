@@ -67,7 +67,36 @@ void GPUGL::CreateQuad()
 void GPUGL::Run(Image& image, const std::unique_ptr<SceneData>& data)
 {
 	glfwPollEvents();
+	UploadSceneData(data);
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 	glReadPixels(0, 0, image.GetWidth(), image.GetHeight(), GL_RGBA, GL_UNSIGNED_BYTE, image.GetData());
 	glfwSwapBuffers(m_Window);
+}
+
+void GPUGL::UploadSceneData(const std::unique_ptr<SceneData>& data)
+{
+	m_Shader->loadUniform("sceneData.width", data.get()->width);
+	m_Shader->loadUniform("sceneData.height", data.get()->height);
+	m_Shader->loadUniform("sceneData.camera.origin", data.get()->camera.position);
+	m_Shader->loadUniform("sceneData.camera.lowerLeftCorner", data.get()->camera.lowerLeftCorner);
+	m_Shader->loadUniform("sceneData.camera.horizontal", data.get()->camera.horizontal);
+	m_Shader->loadUniform("sceneData.camera.vertical", data.get()->camera.vertical);
+	m_Shader->loadUniform("sceneData.camera.w", data.get()->camera.w);
+	m_Shader->loadUniform("sceneData.camera.u", data.get()->camera.u);
+	m_Shader->loadUniform("sceneData.camera.v", data.get()->camera.v);
+	m_Shader->loadUniform("sceneData.camera.lensRadius", data.get()->camera.lensRadius);
+
+	for (int i = 0; i < MAX_SPHERES; i++) {
+		std::string sphere = "sceneData.list.spheres[";
+		sphere += std::to_string(i);
+		sphere += "]";
+		m_Shader->loadUniform(sphere + ".material.albedo", data.get()->list.spheres[i].material.albedo);
+		m_Shader->loadUniform(sphere + ".material.ir", data.get()->list.spheres[i].material.ir);
+		m_Shader->loadUniform(sphere + ".material.roughness", data.get()->list.spheres[i].material.roughness);
+		m_Shader->loadUniform(sphere + ".material.type", data.get()->list.spheres[i].material.type);
+
+		m_Shader->loadUniform(sphere + ".center", data.get()->list.spheres[i].position);
+		m_Shader->loadUniform(sphere + ".radius", data.get()->list.spheres[i].radius);
+		m_Shader->loadUniform(sphere + ".visible", data.get()->list.spheres[i].visible);
+	}
 }
